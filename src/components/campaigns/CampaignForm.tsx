@@ -113,7 +113,7 @@ export default function CampaignForm({ campaign, onSuccess, onCancel }: Campaign
               id="description"
               value={formData.description}
               onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-              placeholder="Describe your campaign and what publishers need to do"
+              placeholder="Describe your campaign and what promoters need to do"
               rows={4}
             />
           </div>
@@ -168,6 +168,7 @@ export default function CampaignForm({ campaign, onSuccess, onCancel }: Campaign
               <SelectContent>
                 <SelectItem value="instagram">Instagram</SelectItem>
                 <SelectItem value="tiktok">TikTok</SelectItem>
+                <SelectItem value="youtube">YouTube</SelectItem>
                 <SelectItem value="whatsapp">WhatsApp</SelectItem>
                 <SelectItem value="facebook">Facebook</SelectItem>
                 <SelectItem value="twitter">Twitter/X</SelectItem>

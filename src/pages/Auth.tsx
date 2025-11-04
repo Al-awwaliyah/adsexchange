@@ -19,7 +19,7 @@ const Auth = () => {
     email: '',
     password: '',
     fullName: '',
-    role: 'advertiser' as 'advertiser' | 'publisher' | 'admin'
+    role: 'advertiser' as 'advertiser' | 'promoter' | 'admin'
   });
 
   const [signInData, setSignInData] = useState({
@@ -83,7 +83,7 @@ const Auth = () => {
       <Card className="w-full max-w-md">
         <CardHeader className="text-center">
           <CardTitle className="text-2xl font-bold">AdExchange</CardTitle>
-          <CardDescription>Connect advertisers with publishers</CardDescription>
+          <CardDescription>Connect advertisers with promoters</CardDescription>
         </CardHeader>
         <CardContent>
           <Tabs defaultValue="signin">
@@ -173,11 +173,11 @@ const Auth = () => {
                       </Label>
                     </div>
                     <div className="flex items-center space-x-2 p-3 border rounded-md hover:bg-accent">
-                      <RadioGroupItem value="publisher" id="publisher" />
-                      <Label htmlFor="publisher" className="flex items-center gap-2 cursor-pointer flex-1">
+                      <RadioGroupItem value="promoter" id="promoter" />
+                      <Label htmlFor="promoter" className="flex items-center gap-2 cursor-pointer flex-1">
                         <Users className="h-4 w-4" />
                         <div>
-                          <div className="font-medium">Publisher</div>
+                          <div className="font-medium">Promoter</div>
                           <div className="text-xs text-muted-foreground">Complete tasks and earn money</div>
                         </div>
                       </Label>

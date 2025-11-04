@@ -95,13 +95,17 @@ export default function WithdrawalForm() {
       <CardHeader>
         <CardTitle>Request Withdrawal</CardTitle>
         <CardDescription>
-          Available balance: <span className="font-bold text-green-600">${wallet?.balance || '0.00'}</span>
+          Available balance: <span className="font-bold text-green-600">
+            {wallet?.currency_type === 'NGN' ? '₦' : '$'}{wallet?.balance || '0.00'}
+          </span>
         </CardDescription>
       </CardHeader>
       <CardContent>
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="space-y-2">
-            <Label htmlFor="amount">Amount ($)</Label>
+            <Label htmlFor="amount">
+              Amount ({wallet?.currency_type === 'NGN' ? '₦ Naira' : '$ USD'})
+            </Label>
             <div className="relative">
               <DollarSign className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
               <Input

@@ -30,7 +30,7 @@ export default function MyTasks() {
       const { data, error } = await supabase
         .from('tasks')
         .select('*, campaigns(*)')
-        .eq('publisher_id', user?.id)
+        .eq('promoter_id', user?.id)
         .order('claimed_at', { ascending: false });
 
       if (error) throw error;

@@ -27,7 +27,7 @@ export default function TaskReview() {
     try {
       let query = supabase
         .from('tasks')
-        .select('*, campaigns(*), profiles!tasks_publisher_id_fkey(*)')
+        .select('*, campaigns(*), profiles!tasks_promoter_id_fkey(*)')
         .eq('status', 'submitted')
         .order('submitted_at', { ascending: false });
 
@@ -61,11 +61,11 @@ export default function TaskReview() {
 
       if (taskError) throw taskError;
 
-      // Update publisher wallet
+      // Update promoter wallet
       const { data: wallet, error: walletFetchError } = await supabase
         .from('wallets')
         .select('balance')
-        .eq('user_id', task.publisher_id)
+        .eq('user_id', task.promoter_id)
         .single();
 
       if (walletFetchError) throw walletFetchError;
@@ -75,7 +75,7 @@ export default function TaskReview() {
       const { error: walletUpdateError } = await supabase
         .from('wallets')
         .update({ balance: newBalance })
-        .eq('user_id', task.publisher_id);
+        .eq('user_id', task.promoter_id);
 
       if (walletUpdateError) throw walletUpdateError;
 
@@ -84,7 +84,7 @@ export default function TaskReview() {
         .from('transactions')
         .insert({
           from_user_id: task.campaigns.advertiser_id,
-          to_user_id: task.publisher_id,
+          to_user_id: task.promoter_id,
           amount: task.campaigns.payout,
           transaction_type: 'task_payout',
           status: 'completed',
@@ -172,7 +172,7 @@ export default function TaskReview() {
               <div>
                 <CardTitle>{task.campaigns?.title}</CardTitle>
                 <CardDescription className="mt-1.5">
-                  Publisher: {task.profiles?.full_name || 'Unknown'}
+                  Promoter: {task.profiles?.full_name || 'Unknown'}
                 </CardDescription>
               </div>
               <Badge>Pending Review</Badge>

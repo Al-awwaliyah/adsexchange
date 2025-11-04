@@ -87,7 +87,7 @@ export type Database = {
           followers_count: number | null
           id: string
           platform: string
-          publisher_id: string
+          promoter_id: string
           verified: boolean | null
         }
         Insert: {
@@ -96,7 +96,7 @@ export type Database = {
           followers_count?: number | null
           id?: string
           platform: string
-          publisher_id: string
+          promoter_id: string
           verified?: boolean | null
         }
         Update: {
@@ -105,7 +105,7 @@ export type Database = {
           followers_count?: number | null
           id?: string
           platform?: string
-          publisher_id?: string
+          promoter_id?: string
           verified?: boolean | null
         }
         Relationships: []
@@ -116,8 +116,8 @@ export type Database = {
           claimed_at: string | null
           created_at: string | null
           id: string
+          promoter_id: string | null
           proof_url: string | null
-          publisher_id: string | null
           reviewed_at: string | null
           status: string | null
           submitted_at: string | null
@@ -127,8 +127,8 @@ export type Database = {
           claimed_at?: string | null
           created_at?: string | null
           id?: string
+          promoter_id?: string | null
           proof_url?: string | null
-          publisher_id?: string | null
           reviewed_at?: string | null
           status?: string | null
           submitted_at?: string | null
@@ -138,8 +138,8 @@ export type Database = {
           claimed_at?: string | null
           created_at?: string | null
           id?: string
+          promoter_id?: string | null
           proof_url?: string | null
-          publisher_id?: string | null
           reviewed_at?: string | null
           status?: string | null
           submitted_at?: string | null
@@ -216,6 +216,7 @@ export type Database = {
           balance: number | null
           created_at: string | null
           currency: string | null
+          currency_type: string | null
           id: string
           updated_at: string | null
           user_id: string
@@ -224,6 +225,7 @@ export type Database = {
           balance?: number | null
           created_at?: string | null
           currency?: string | null
+          currency_type?: string | null
           id?: string
           updated_at?: string | null
           user_id: string
@@ -232,6 +234,7 @@ export type Database = {
           balance?: number | null
           created_at?: string | null
           currency?: string | null
+          currency_type?: string | null
           id?: string
           updated_at?: string | null
           user_id?: string

@@ -163,7 +163,7 @@ export default function PayoutApproval() {
     <Card>
       <CardHeader>
         <CardTitle>Withdrawal Requests</CardTitle>
-        <CardDescription>Approve or reject publisher withdrawals</CardDescription>
+        <CardDescription>Approve or reject promoter withdrawals</CardDescription>
       </CardHeader>
       <CardContent>
         <div className="space-y-4">

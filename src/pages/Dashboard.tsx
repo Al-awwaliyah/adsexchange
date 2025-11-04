@@ -12,7 +12,7 @@ import { Label } from '@/components/ui/label';
 import { Megaphone, Users } from 'lucide-react';
 import { toast } from '@/hooks/use-toast';
 
-type AppRole = 'advertiser' | 'publisher' | 'admin';
+type AppRole = 'advertiser' | 'promoter' | 'admin';
 
 const RoleSelector = ({ userId, onRoleSelected }: { userId: string; onRoleSelected: () => void }) => {
   const [selectedRole, setSelectedRole] = useState<AppRole>('advertiser');
@@ -59,11 +59,11 @@ const RoleSelector = ({ userId, onRoleSelected }: { userId: string; onRoleSelect
             </Label>
           </div>
           <div className="flex items-center space-x-2 p-3 border rounded-md hover:bg-accent">
-            <RadioGroupItem value="publisher" id="publisher" />
-            <Label htmlFor="publisher" className="flex items-center gap-2 cursor-pointer flex-1">
+            <RadioGroupItem value="promoter" id="promoter" />
+            <Label htmlFor="promoter" className="flex items-center gap-2 cursor-pointer flex-1">
               <Users className="h-4 w-4" />
               <div>
-                <div className="font-medium">Publisher</div>
+                <div className="font-medium">Promoter</div>
                 <div className="text-xs text-muted-foreground">Complete tasks and earn money</div>
               </div>
             </Label>
@@ -108,7 +108,7 @@ const Dashboard = () => {
     return <AdvertiserDashboard />;
   }
 
-  if (roles.includes('publisher')) {
+  if (roles.includes('promoter')) {
     return <PublisherDashboard />;
   }
 

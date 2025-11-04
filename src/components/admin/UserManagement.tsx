@@ -10,7 +10,7 @@ export default function UserManagement() {
   const [stats, setStats] = useState({
     total: 0,
     advertisers: 0,
-    publishers: 0,
+    promoters: 0,
   });
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
@@ -33,9 +33,9 @@ export default function UserManagement() {
       const total = profiles?.length || 0;
       const roleData = profiles?.flatMap(p => p.user_roles || []);
       const advertisers = roleData?.filter(r => r.role === 'advertiser').length || 0;
-      const publishers = roleData?.filter(r => r.role === 'publisher').length || 0;
-
-      setStats({ total, advertisers, publishers });
+      const promoters = roleData?.filter(r => r.role === 'promoter').length || 0;
+      
+      setStats({ total, advertisers, promoters });
     } catch (error) {
       console.error('Error fetching users:', error);
     } finally {
@@ -82,11 +82,11 @@ export default function UserManagement() {
 
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Publishers</CardTitle>
+            <CardTitle className="text-sm font-medium">Promoters</CardTitle>
             <UserCheck className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{stats.publishers}</div>
+            <div className="text-2xl font-bold">{stats.promoters}</div>
           </CardContent>
         </Card>
       </div>

@@ -27,10 +27,10 @@ const Index = () => {
       <main>
         <section className="container mx-auto px-4 py-20 text-center">
           <h2 className="text-5xl font-bold mb-6">
-            Connect Advertisers with Publishers
+            Connect Advertisers with Promoters
           </h2>
           <p className="text-xl text-muted-foreground mb-8 max-w-2xl mx-auto">
-            The marketplace where advertisers launch campaigns and publishers earn by completing tasks on social media
+            The marketplace where advertisers launch campaigns and promoters earn by completing tasks on social media
           </p>
           <div className="flex gap-4 justify-center">
             <Button size="lg" onClick={() => navigate('/auth')}>
@@ -65,7 +65,7 @@ const Index = () => {
             <Card>
               <CardHeader>
                 <Users className="h-12 w-12 text-primary mb-4" />
-                <CardTitle>For Publishers</CardTitle>
+                <CardTitle>For Promoters</CardTitle>
                 <CardDescription>
                   Monetize your social media presence by completing tasks from brands and advertisers
                 </CardDescription>
@@ -104,7 +104,7 @@ const Index = () => {
           <div className="container mx-auto px-4 text-center">
             <h3 className="text-3xl font-bold mb-4">Ready to get started?</h3>
             <p className="text-lg mb-8 opacity-90">
-              Join thousands of advertisers and publishers already using AdExchange
+              Join thousands of advertisers and promoters already using AdExchange
             </p>
             <Button size="lg" variant="secondary" onClick={() => navigate('/auth')}>
               Create Your Account

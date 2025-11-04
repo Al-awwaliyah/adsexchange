@@ -56,7 +56,7 @@ export default function TaskBrowser() {
       const { error } = await supabase
         .from('tasks')
         .update({
-          publisher_id: user.id,
+          promoter_id: user.id,
           status: 'in_progress',
           claimed_at: new Date().toISOString(),
         })
@@ -110,6 +110,7 @@ export default function TaskBrowser() {
             <SelectItem value="all">All Platforms</SelectItem>
             <SelectItem value="instagram">Instagram</SelectItem>
             <SelectItem value="tiktok">TikTok</SelectItem>
+            <SelectItem value="youtube">YouTube</SelectItem>
             <SelectItem value="whatsapp">WhatsApp</SelectItem>
             <SelectItem value="facebook">Facebook</SelectItem>
             <SelectItem value="twitter">Twitter/X</SelectItem>

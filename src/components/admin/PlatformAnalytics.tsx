@@ -97,7 +97,7 @@ export default function PlatformAnalytics() {
     {
       title: 'Total Payouts',
       value: `$${analytics.totalPayouts.toFixed(2)}`,
-      subtitle: 'To publishers',
+      subtitle: 'To promoters',
       icon: Users,
       color: 'text-orange-600',
     },
