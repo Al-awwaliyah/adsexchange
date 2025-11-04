@@ -1,12 +1,83 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useAuth } from '@/hooks/useAuth';
+import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { LogOut, PlusCircle, BarChart3, Wallet } from 'lucide-react';
+import CampaignForm from '@/components/campaigns/CampaignForm';
+import CampaignCard from '@/components/campaigns/CampaignCard';
+import CampaignAnalytics from '@/components/campaigns/CampaignAnalytics';
+import { LogOut, Plus, BarChart3, Wallet } from 'lucide-react';
 
 const AdvertiserDashboard = () => {
   const { user, signOut } = useAuth();
+  const [campaigns, setCampaigns] = useState<any[]>([]);
+  const [wallet, setWallet] = useState<any>(null);
+  const [showForm, setShowForm] = useState(false);
+  const [editingCampaign, setEditingCampaign] = useState<any>(null);
+  const [selectedCampaignForAnalytics, setSelectedCampaignForAnalytics] = useState<string | null>(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    if (user) {
+      fetchCampaigns();
+      fetchWallet();
+    }
+  }, [user]);
+
+  const fetchCampaigns = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('campaigns')
+        .select('*')
+        .eq('advertiser_id', user?.id)
+        .order('created_at', { ascending: false });
+
+      if (error) throw error;
+      setCampaigns(data || []);
+    } catch (error) {
+      console.error('Error fetching campaigns:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const fetchWallet = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('wallets')
+        .select('*')
+        .eq('user_id', user?.id)
+        .single();
+
+      if (error) throw error;
+      setWallet(data);
+    } catch (error) {
+      console.error('Error fetching wallet:', error);
+    }
+  };
+
+  const handleEdit = (campaign: any) => {
+    setEditingCampaign(campaign);
+    setShowForm(true);
+  };
+
+  const handleFormSuccess = () => {
+    setShowForm(false);
+    setEditingCampaign(null);
+    fetchCampaigns();
+  };
+
+  const handleCancel = () => {
+    setShowForm(false);
+    setEditingCampaign(null);
+  };
+
+  const activeCampaigns = campaigns.filter(c => c.status === 'active').length;
+  const totalSpend = campaigns.reduce((sum, c) => {
+    // Calculate from actual completed tasks - simplified for now
+    return sum + (c.budget || 0);
+  }, 0);
 
   return (
     <div className="min-h-screen bg-background">
@@ -34,19 +105,19 @@ const AdvertiserDashboard = () => {
               <BarChart3 className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">0</div>
-              <p className="text-xs text-muted-foreground">No campaigns yet</p>
+              <div className="text-2xl font-bold">{activeCampaigns}</div>
+              <p className="text-xs text-muted-foreground">{campaigns.length} total</p>
             </CardContent>
           </Card>
 
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Total Spend</CardTitle>
+              <CardTitle className="text-sm font-medium">Total Budget</CardTitle>
               <Wallet className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">$0.00</div>
-              <p className="text-xs text-muted-foreground">All time</p>
+              <div className="text-2xl font-bold">${totalSpend.toFixed(2)}</div>
+              <p className="text-xs text-muted-foreground">All campaigns</p>
             </CardContent>
           </Card>
 
@@ -56,7 +127,7 @@ const AdvertiserDashboard = () => {
               <Wallet className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">$0.00</div>
+              <div className="text-2xl font-bold">${wallet?.balance || '0.00'}</div>
               <Button size="sm" className="mt-2">Add Funds</Button>
             </CardContent>
           </Card>
@@ -70,34 +141,92 @@ const AdvertiserDashboard = () => {
           </TabsList>
 
           <TabsContent value="campaigns" className="space-y-4">
-            <div className="flex justify-between items-center">
-              <h2 className="text-xl font-semibold">My Campaigns</h2>
-              <Button>
-                <PlusCircle className="h-4 w-4 mr-2" />
-                Create Campaign
-              </Button>
-            </div>
-            <Card>
-              <CardContent className="py-12 text-center">
-                <p className="text-muted-foreground mb-4">You haven't created any campaigns yet</p>
-                <Button>
-                  <PlusCircle className="h-4 w-4 mr-2" />
-                  Create Your First Campaign
-                </Button>
-              </CardContent>
-            </Card>
+            {!showForm ? (
+              <>
+                <div className="flex justify-between items-center">
+                  <div>
+                    <h2 className="text-2xl font-bold">Your Campaigns</h2>
+                    <p className="text-muted-foreground">Manage your advertising campaigns</p>
+                  </div>
+                  <Button onClick={() => setShowForm(true)}>
+                    <Plus className="h-4 w-4 mr-2" />
+                    Create Campaign
+                  </Button>
+                </div>
+
+                {loading ? (
+                  <Card>
+                    <CardContent className="p-6">
+                      <p className="text-center text-muted-foreground">Loading campaigns...</p>
+                    </CardContent>
+                  </Card>
+                ) : campaigns.length === 0 ? (
+                  <Card>
+                    <CardContent className="py-12 text-center">
+                      <p className="text-muted-foreground mb-4">
+                        No campaigns yet. Create your first campaign to get started!
+                      </p>
+                    </CardContent>
+                  </Card>
+                ) : (
+                  <div className="grid gap-4 md:grid-cols-2">
+                    {campaigns.map((campaign) => (
+                      <CampaignCard
+                        key={campaign.id}
+                        campaign={campaign}
+                        onEdit={handleEdit}
+                        onUpdate={fetchCampaigns}
+                      />
+                    ))}
+                  </div>
+                )}
+              </>
+            ) : (
+              <CampaignForm
+                campaign={editingCampaign}
+                onSuccess={handleFormSuccess}
+                onCancel={handleCancel}
+              />
+            )}
           </TabsContent>
 
-          <TabsContent value="analytics">
-            <Card>
-              <CardHeader>
-                <CardTitle>Campaign Analytics</CardTitle>
-                <CardDescription>Track your campaign performance</CardDescription>
-              </CardHeader>
-              <CardContent>
-                <p className="text-muted-foreground">Analytics will appear here once you have active campaigns</p>
-              </CardContent>
-            </Card>
+          <TabsContent value="analytics" className="space-y-4">
+            <div>
+              <h2 className="text-2xl font-bold">Campaign Analytics</h2>
+              <p className="text-muted-foreground">Track your campaign performance</p>
+            </div>
+
+            {campaigns.length === 0 ? (
+              <Card>
+                <CardContent className="p-6">
+                  <p className="text-center text-muted-foreground">
+                    Analytics will appear here once you have active campaigns.
+                  </p>
+                </CardContent>
+              </Card>
+            ) : (
+              <>
+                <div className="space-y-2">
+                  <label className="text-sm font-medium">Select Campaign</label>
+                  <select
+                    className="w-full p-2 border rounded-md bg-background"
+                    value={selectedCampaignForAnalytics || ''}
+                    onChange={(e) => setSelectedCampaignForAnalytics(e.target.value)}
+                  >
+                    <option value="">Choose a campaign...</option>
+                    {campaigns.map((campaign) => (
+                      <option key={campaign.id} value={campaign.id}>
+                        {campaign.title}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+
+                {selectedCampaignForAnalytics && (
+                  <CampaignAnalytics campaignId={selectedCampaignForAnalytics} />
+                )}
+              </>
+            )}
           </TabsContent>
 
           <TabsContent value="billing">
