@@ -4,16 +4,18 @@ import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Alert, AlertDescription } from '@/components/ui/alert';
 import CampaignForm from '@/components/campaigns/CampaignForm';
 import CampaignCard from '@/components/campaigns/CampaignCard';
 import CampaignAnalytics from '@/components/campaigns/CampaignAnalytics';
 import TaskReview from '@/components/tasks/TaskReview';
-import { LogOut, Plus, BarChart3, Wallet } from 'lucide-react';
+import { LogOut, Plus, BarChart3, Wallet, AlertCircle } from 'lucide-react';
 
 const AdvertiserDashboard = () => {
   const { user, signOut } = useAuth();
   const [campaigns, setCampaigns] = useState<any[]>([]);
   const [wallet, setWallet] = useState<any>(null);
+  const [profile, setProfile] = useState<any>(null);
   const [showForm, setShowForm] = useState(false);
   const [editingCampaign, setEditingCampaign] = useState<any>(null);
   const [selectedCampaignForAnalytics, setSelectedCampaignForAnalytics] = useState<string | null>(null);
@@ -23,8 +25,24 @@ const AdvertiserDashboard = () => {
     if (user) {
       fetchCampaigns();
       fetchWallet();
+      fetchProfile();
     }
   }, [user]);
+
+  const fetchProfile = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('profiles')
+        .select('*')
+        .eq('id', user?.id)
+        .single();
+
+      if (error) throw error;
+      setProfile(data);
+    } catch (error) {
+      console.error('Error fetching profile:', error);
+    }
+  };
 
   const fetchCampaigns = async () => {
     try {
@@ -128,7 +146,9 @@ const AdvertiserDashboard = () => {
               <Wallet className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">${wallet?.balance || '0.00'}</div>
+              <div className="text-2xl font-bold">
+                {wallet?.currency_type === 'NGN' ? '₦' : '$'}{wallet?.balance || '0.00'}
+              </div>
               <Button size="sm" className="mt-2">Add Funds</Button>
             </CardContent>
           </Card>
@@ -143,6 +163,15 @@ const AdvertiserDashboard = () => {
           </TabsList>
 
           <TabsContent value="campaigns" className="space-y-4">
+            {!profile?.verified && (
+              <Alert>
+                <AlertCircle className="h-4 w-4" />
+                <AlertDescription>
+                  Your account needs to be verified by an admin before you can create campaigns.
+                </AlertDescription>
+              </Alert>
+            )}
+
             {!showForm ? (
               <>
                 <div className="flex justify-between items-center">
@@ -150,7 +179,7 @@ const AdvertiserDashboard = () => {
                     <h2 className="text-2xl font-bold">Your Campaigns</h2>
                     <p className="text-muted-foreground">Manage your advertising campaigns</p>
                   </div>
-                  <Button onClick={() => setShowForm(true)}>
+                  <Button onClick={() => setShowForm(true)} disabled={!profile?.verified}>
                     <Plus className="h-4 w-4 mr-2" />
                     Create Campaign
                   </Button>

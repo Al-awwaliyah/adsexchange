@@ -13,9 +13,32 @@ export default function TaskBrowser() {
   const { user } = useAuth();
   const [tasks, setTasks] = useState<any[]>([]);
   const [campaigns, setCampaigns] = useState<any[]>([]);
+  const [profile, setProfile] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [platformFilter, setPlatformFilter] = useState('all');
   const [searchTerm, setSearchTerm] = useState('');
+
+  useEffect(() => {
+    fetchAvailableTasks();
+    if (user) {
+      fetchProfile();
+    }
+  }, [user]);
+
+  const fetchProfile = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('profiles')
+        .select('*')
+        .eq('id', user?.id)
+        .single();
+
+      if (error) throw error;
+      setProfile(data);
+    } catch (error) {
+      console.error('Error fetching profile:', error);
+    }
+  };
 
   useEffect(() => {
     fetchAvailableTasks();
@@ -51,6 +74,15 @@ export default function TaskBrowser() {
 
   const handleClaimTask = async (taskId: string) => {
     if (!user) return;
+
+    if (!profile?.verified) {
+      toast({
+        title: 'Account not verified',
+        description: 'Your account needs to be verified by an admin before you can claim tasks.',
+        variant: 'destructive',
+      });
+      return;
+    }
 
     try {
       const { error } = await supabase
@@ -186,8 +218,9 @@ export default function TaskBrowser() {
                           key={task.id}
                           onClick={() => handleClaimTask(task.id)}
                           className="w-full"
+                          disabled={!profile?.verified}
                         >
-                          Claim Task
+                          {profile?.verified ? 'Claim Task' : 'Verification Required'}
                         </Button>
                       ))}
                     </div>

@@ -2,6 +2,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import UserManagement from '@/components/admin/UserManagement';
+import UserVerification from '@/components/admin/UserVerification';
 import PayoutApproval from '@/components/admin/PayoutApproval';
 import PlatformAnalytics from '@/components/admin/PlatformAnalytics';
 import TaskReview from '@/components/tasks/TaskReview';
@@ -38,12 +39,17 @@ const AdminDashboard = () => {
           <PlatformAnalytics />
         </div>
 
-        <Tabs defaultValue="users" className="space-y-4">
+        <Tabs defaultValue="verification" className="space-y-4">
           <TabsList>
+            <TabsTrigger value="verification">Verification</TabsTrigger>
             <TabsTrigger value="users">User Management</TabsTrigger>
             <TabsTrigger value="tasks">Task Review</TabsTrigger>
             <TabsTrigger value="payouts">Payouts</TabsTrigger>
           </TabsList>
+
+          <TabsContent value="verification">
+            <UserVerification />
+          </TabsContent>
 
           <TabsContent value="users">
             <UserManagement />

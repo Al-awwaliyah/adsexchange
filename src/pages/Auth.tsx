@@ -5,6 +5,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { useAuth } from '@/hooks/useAuth';
 import { toast } from '@/hooks/use-toast';
@@ -19,7 +20,8 @@ const Auth = () => {
     email: '',
     password: '',
     fullName: '',
-    role: 'advertiser' as 'advertiser' | 'promoter' | 'admin'
+    role: 'advertiser' as 'advertiser' | 'promoter' | 'admin',
+    currency: 'USD' as 'USD' | 'NGN'
   });
 
   const [signInData, setSignInData] = useState({
@@ -40,7 +42,8 @@ const Auth = () => {
       signUpData.email,
       signUpData.password,
       signUpData.fullName,
-      signUpData.role
+      signUpData.role,
+      signUpData.currency
     );
 
     setLoading(false);
@@ -183,6 +186,21 @@ const Auth = () => {
                       </Label>
                     </div>
                   </RadioGroup>
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="currency">Preferred Currency</Label>
+                  <Select
+                    value={signUpData.currency}
+                    onValueChange={(value: any) => setSignUpData({ ...signUpData, currency: value })}
+                  >
+                    <SelectTrigger id="currency">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="USD">$ US Dollar (USD)</SelectItem>
+                      <SelectItem value="NGN">₦ Nigerian Naira (NGN)</SelectItem>
+                    </SelectContent>
+                  </Select>
                 </div>
                 <Button type="submit" className="w-full" disabled={loading}>
                   {loading ? 'Creating account...' : 'Sign Up'}

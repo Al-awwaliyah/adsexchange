@@ -10,7 +10,7 @@ interface AuthContextType {
   session: Session | null;
   roles: AppRole[];
   loading: boolean;
-  signUp: (email: string, password: string, fullName: string, role: AppRole) => Promise<{ error: any }>;
+  signUp: (email: string, password: string, fullName: string, role: AppRole, currency?: 'USD' | 'NGN') => Promise<{ error: any }>;
   signIn: (email: string, password: string) => Promise<{ error: any }>;
   signOut: () => Promise<void>;
   hasRole: (role: AppRole) => boolean;
@@ -64,7 +64,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     return () => subscription.unsubscribe();
   }, []);
 
-  const signUp = async (email: string, password: string, fullName: string, role: AppRole) => {
+  const signUp = async (email: string, password: string, fullName: string, role: AppRole, currency: 'USD' | 'NGN' = 'USD') => {
     const redirectUrl = `${window.location.origin}/`;
     
     const { data, error } = await supabase.auth.signUp({
@@ -72,7 +72,10 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       password,
       options: {
         emailRedirectTo: redirectUrl,
-        data: { full_name: fullName }
+        data: { 
+          full_name: fullName,
+          currency_type: currency
+        }
       }
     });
 
@@ -87,6 +90,16 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
           description: 'Account created but role assignment failed. Contact support.',
           variant: 'destructive'
         });
+      }
+
+      // Update wallet currency
+      const { error: walletError } = await supabase
+        .from('wallets')
+        .update({ currency_type: currency })
+        .eq('user_id', data.user.id);
+
+      if (walletError) {
+        console.error('Error updating wallet currency:', walletError);
       }
     }
 

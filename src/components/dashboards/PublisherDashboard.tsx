@@ -4,23 +4,41 @@ import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Alert, AlertDescription } from '@/components/ui/alert';
 import TaskBrowser from '@/components/tasks/TaskBrowser';
 import MyTasks from '@/components/tasks/MyTasks';
 import WithdrawalForm from '@/components/wallet/WithdrawalForm';
 import TransactionHistory from '@/components/wallet/TransactionHistory';
-import { LogOut, DollarSign, CheckCircle } from 'lucide-react';
+import { LogOut, DollarSign, CheckCircle, AlertCircle } from 'lucide-react';
 
 const PublisherDashboard = () => {
   const { user, signOut } = useAuth();
   const [wallet, setWallet] = useState<any>(null);
+  const [profile, setProfile] = useState<any>(null);
   const [earnings, setEarnings] = useState(0);
 
   useEffect(() => {
     if (user) {
       fetchWallet();
       fetchEarnings();
+      fetchProfile();
     }
   }, [user]);
+
+  const fetchProfile = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('profiles')
+        .select('*')
+        .eq('id', user?.id)
+        .single();
+
+      if (error) throw error;
+      setProfile(data);
+    } catch (error) {
+      console.error('Error fetching profile:', error);
+    }
+  };
 
   const fetchWallet = async () => {
     try {
@@ -81,7 +99,9 @@ const PublisherDashboard = () => {
               <DollarSign className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">${earnings.toFixed(2)}</div>
+              <div className="text-2xl font-bold">
+                {wallet?.currency_type === 'NGN' ? '₦' : '$'}{earnings.toFixed(2)}
+              </div>
               <p className="text-xs text-muted-foreground">All time</p>
             </CardContent>
           </Card>
@@ -92,7 +112,9 @@ const PublisherDashboard = () => {
               <DollarSign className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">${wallet?.balance || '0.00'}</div>
+              <div className="text-2xl font-bold">
+                {wallet?.currency_type === 'NGN' ? '₦' : '$'}{wallet?.balance || '0.00'}
+              </div>
             </CardContent>
           </Card>
 
@@ -117,6 +139,14 @@ const PublisherDashboard = () => {
           </TabsList>
 
           <TabsContent value="tasks" className="space-y-4">
+            {!profile?.verified && (
+              <Alert>
+                <AlertCircle className="h-4 w-4" />
+                <AlertDescription>
+                  Your account needs to be verified by an admin before you can claim tasks.
+                </AlertDescription>
+              </Alert>
+            )}
             <div>
               <h2 className="text-2xl font-bold mb-2">Available Tasks</h2>
               <p className="text-muted-foreground mb-4">Browse and claim tasks to start earning</p>
