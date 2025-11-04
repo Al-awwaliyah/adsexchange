@@ -9,6 +9,7 @@ import TaskBrowser from '@/components/tasks/TaskBrowser';
 import MyTasks from '@/components/tasks/MyTasks';
 import WithdrawalForm from '@/components/wallet/WithdrawalForm';
 import TransactionHistory from '@/components/wallet/TransactionHistory';
+import CurrencySettings from '@/components/settings/CurrencySettings';
 import { LogOut, DollarSign, CheckCircle, AlertCircle } from 'lucide-react';
 
 const PublisherDashboard = () => {
@@ -136,6 +137,7 @@ const PublisherDashboard = () => {
             <TabsTrigger value="mytasks">My Tasks</TabsTrigger>
             <TabsTrigger value="withdraw">Withdraw</TabsTrigger>
             <TabsTrigger value="transactions">Transactions</TabsTrigger>
+            <TabsTrigger value="settings">Settings</TabsTrigger>
           </TabsList>
 
           <TabsContent value="tasks" className="space-y-4">
@@ -170,6 +172,10 @@ const PublisherDashboard = () => {
 
           <TabsContent value="transactions">
             <TransactionHistory />
+          </TabsContent>
+
+          <TabsContent value="settings">
+            <CurrencySettings />
           </TabsContent>
         </Tabs>
       </main>

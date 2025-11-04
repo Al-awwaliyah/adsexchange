@@ -9,6 +9,7 @@ import CampaignForm from '@/components/campaigns/CampaignForm';
 import CampaignCard from '@/components/campaigns/CampaignCard';
 import CampaignAnalytics from '@/components/campaigns/CampaignAnalytics';
 import TaskReview from '@/components/tasks/TaskReview';
+import CurrencySettings from '@/components/settings/CurrencySettings';
 import { LogOut, Plus, BarChart3, Wallet, AlertCircle } from 'lucide-react';
 
 const AdvertiserDashboard = () => {
@@ -135,7 +136,9 @@ const AdvertiserDashboard = () => {
               <Wallet className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">${totalSpend.toFixed(2)}</div>
+              <div className="text-2xl font-bold">
+                {wallet?.currency_type === 'NGN' ? '₦' : '$'}{totalSpend.toFixed(2)}
+              </div>
               <p className="text-xs text-muted-foreground">All campaigns</p>
             </CardContent>
           </Card>
@@ -160,6 +163,7 @@ const AdvertiserDashboard = () => {
             <TabsTrigger value="review">Task Review</TabsTrigger>
             <TabsTrigger value="analytics">Analytics</TabsTrigger>
             <TabsTrigger value="billing">Billing</TabsTrigger>
+            <TabsTrigger value="settings">Settings</TabsTrigger>
           </TabsList>
 
           <TabsContent value="campaigns" className="space-y-4">
@@ -278,6 +282,10 @@ const AdvertiserDashboard = () => {
                 <p className="text-muted-foreground">No transactions yet</p>
               </CardContent>
             </Card>
+          </TabsContent>
+
+          <TabsContent value="settings">
+            <CurrencySettings />
           </TabsContent>
         </Tabs>
       </main>

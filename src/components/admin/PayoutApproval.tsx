@@ -207,7 +207,10 @@ export default function PayoutApproval() {
                 )}
               </div>
               <div className="flex items-center gap-4">
-                <p className="text-xl font-bold">${withdrawal.amount}</p>
+                <p className="text-xl font-bold">
+                  {withdrawal.payment_method?.includes('naira') || withdrawal.payment_details?.currency === 'NGN' ? '₦' : '$'}
+                  {withdrawal.amount}
+                </p>
                 {withdrawal.status === 'pending' && (
                   <div className="flex gap-2">
                     <Button
