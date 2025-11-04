@@ -40,10 +40,6 @@ export default function TaskBrowser() {
     }
   };
 
-  useEffect(() => {
-    fetchAvailableTasks();
-  }, []);
-
   const fetchAvailableTasks = async () => {
     try {
       const { data: tasksData, error: tasksError } = await supabase
