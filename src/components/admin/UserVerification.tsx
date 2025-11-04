@@ -18,13 +18,36 @@ export default function UserVerification() {
 
   const fetchUsers = async () => {
     try {
-      const { data: profiles, error } = await supabase
+      // Fetch profiles
+      const { data: profiles, error: profilesError } = await supabase
         .from('profiles')
-        .select('*, user_roles(role), wallets(balance, currency_type)')
+        .select('*')
         .order('created_at', { ascending: false });
 
-      if (error) throw error;
-      setUsers(profiles || []);
+      if (profilesError) throw profilesError;
+
+      // Fetch user roles
+      const { data: roles, error: rolesError } = await supabase
+        .from('user_roles')
+        .select('*');
+
+      if (rolesError) throw rolesError;
+
+      // Fetch wallets
+      const { data: wallets, error: walletsError } = await supabase
+        .from('wallets')
+        .select('*');
+
+      if (walletsError) throw walletsError;
+
+      // Combine the data
+      const combinedUsers = profiles?.map(profile => ({
+        ...profile,
+        user_roles: roles?.filter(r => r.user_id === profile.id) || [],
+        wallets: wallets?.filter(w => w.user_id === profile.id) || []
+      })) || [];
+
+      setUsers(combinedUsers);
     } catch (error) {
       console.error('Error fetching users:', error);
       toast({

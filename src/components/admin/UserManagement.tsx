@@ -21,19 +21,41 @@ export default function UserManagement() {
 
   const fetchUsers = async () => {
     try {
+      // Fetch profiles
       const { data: profiles, error: profilesError } = await supabase
         .from('profiles')
-        .select('*, user_roles(role), wallets(balance)');
+        .select('*');
 
       if (profilesError) throw profilesError;
 
-      setUsers(profiles || []);
+      // Fetch user roles
+      const { data: roles, error: rolesError } = await supabase
+        .from('user_roles')
+        .select('*');
+
+      if (rolesError) throw rolesError;
+
+      // Fetch wallets
+      const { data: wallets, error: walletsError } = await supabase
+        .from('wallets')
+        .select('*');
+
+      if (walletsError) throw walletsError;
+
+      // Combine the data
+      const combinedUsers = profiles?.map(profile => ({
+        ...profile,
+        user_roles: roles?.filter(r => r.user_id === profile.id) || [],
+        wallets: wallets?.filter(w => w.user_id === profile.id) || []
+      })) || [];
+
+      setUsers(combinedUsers);
 
       // Calculate stats
-      const total = profiles?.length || 0;
-      const roleData = profiles?.flatMap(p => p.user_roles || []);
-      const advertisers = roleData?.filter(r => r.role === 'advertiser').length || 0;
-      const promoters = roleData?.filter(r => r.role === 'promoter').length || 0;
+      const total = combinedUsers.length;
+      const roleData = combinedUsers.flatMap(p => p.user_roles || []);
+      const advertisers = roleData.filter(r => r.role === 'advertiser').length;
+      const promoters = roleData.filter(r => r.role === 'promoter').length;
       
       setStats({ total, advertisers, promoters });
     } catch (error) {

@@ -25,21 +25,46 @@ export default function TaskReview() {
 
   const fetchSubmittedTasks = async () => {
     try {
-      let query = supabase
+      // Fetch tasks
+      let tasksQuery = supabase
         .from('tasks')
-        .select('*, campaigns(*), profiles!tasks_promoter_id_fkey(*)')
+        .select('*')
         .eq('status', 'submitted')
         .order('submitted_at', { ascending: false });
 
-      // If advertiser, only show their campaigns
+      const { data: tasks, error: tasksError } = await tasksQuery;
+
+      if (tasksError) throw tasksError;
+
+      // Fetch campaigns
+      const { data: campaigns, error: campaignsError } = await supabase
+        .from('campaigns')
+        .select('*');
+
+      if (campaignsError) throw campaignsError;
+
+      // Fetch profiles
+      const { data: profiles, error: profilesError } = await supabase
+        .from('profiles')
+        .select('*');
+
+      if (profilesError) throw profilesError;
+
+      // Combine the data
+      let combinedTasks = tasks?.map(task => ({
+        ...task,
+        campaigns: campaigns?.find(c => c.id === task.campaign_id) || null,
+        profiles: profiles?.find(p => p.id === task.promoter_id) || null
+      })) || [];
+
+      // If advertiser (not admin), filter to only their campaigns
       if (!hasRole('admin')) {
-        query = query.eq('campaigns.advertiser_id', user?.id);
+        combinedTasks = combinedTasks.filter(task => 
+          task.campaigns?.advertiser_id === user?.id
+        );
       }
 
-      const { data, error } = await query;
-
-      if (error) throw error;
-      setTasks(data || []);
+      setTasks(combinedTasks);
     } catch (error) {
       console.error('Error fetching tasks:', error);
     } finally {

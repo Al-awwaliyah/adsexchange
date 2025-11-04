@@ -17,13 +17,28 @@ export default function PayoutApproval() {
 
   const fetchWithdrawals = async () => {
     try {
-      const { data, error } = await supabase
+      // Fetch withdrawals
+      const { data: withdrawals, error: withdrawalsError } = await supabase
         .from('withdrawals')
-        .select('*, profiles(full_name)')
+        .select('*')
         .order('created_at', { ascending: false });
 
-      if (error) throw error;
-      setWithdrawals(data || []);
+      if (withdrawalsError) throw withdrawalsError;
+
+      // Fetch profiles
+      const { data: profiles, error: profilesError } = await supabase
+        .from('profiles')
+        .select('*');
+
+      if (profilesError) throw profilesError;
+
+      // Combine the data
+      const combinedWithdrawals = withdrawals?.map(withdrawal => ({
+        ...withdrawal,
+        profiles: profiles?.find(p => p.id === withdrawal.user_id) || null
+      })) || [];
+
+      setWithdrawals(combinedWithdrawals);
     } catch (error) {
       console.error('Error fetching withdrawals:', error);
     } finally {
