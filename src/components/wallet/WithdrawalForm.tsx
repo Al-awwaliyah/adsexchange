@@ -15,7 +15,10 @@ export default function WithdrawalForm() {
   const [loading, setLoading] = useState(false);
   const [formData, setFormData] = useState({
     amount: '',
-    payment_method: 'bank_transfer',
+    payment_method: '',
+    bank_name: '',
+    account_number: '',
+    account_name: '',
     account_details: '',
   });
 
@@ -35,10 +38,44 @@ export default function WithdrawalForm() {
 
       if (error) throw error;
       setWallet(data);
+      
+      // Set default payment method based on currency
+      if (data?.currency_type === 'NGN') {
+        setFormData(prev => ({ ...prev, payment_method: prev.payment_method || 'nigerian_bank' }));
+      } else {
+        setFormData(prev => ({ ...prev, payment_method: prev.payment_method || 'bank_transfer' }));
+      }
     } catch (error) {
       console.error('Error fetching wallet:', error);
     }
   };
+
+  const nigerianBanks = [
+    'Access Bank',
+    'Citibank',
+    'Ecobank Nigeria',
+    'Fidelity Bank',
+    'First Bank of Nigeria',
+    'First City Monument Bank (FCMB)',
+    'Globus Bank',
+    'Guaranty Trust Bank (GTBank)',
+    'Heritage Bank',
+    'Keystone Bank',
+    'Kuda Bank',
+    'Parallex Bank',
+    'Polaris Bank',
+    'Providus Bank',
+    'Stanbic IBTC Bank',
+    'Standard Chartered Bank',
+    'Sterling Bank',
+    'SunTrust Bank',
+    'Titan Trust Bank',
+    'Union Bank of Nigeria',
+    'United Bank for Africa (UBA)',
+    'Unity Bank',
+    'Wema Bank',
+    'Zenith Bank',
+  ];
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -48,21 +85,45 @@ export default function WithdrawalForm() {
     if (amount <= 0 || amount > parseFloat(wallet.balance)) {
       toast({
         title: 'Invalid amount',
-        description: 'Amount must be between $0 and your available balance',
+        description: `Amount must be between 0 and your available balance`,
         variant: 'destructive',
       });
       return;
     }
 
+    // Validate Nigerian bank details
+    if (wallet.currency_type === 'NGN' && formData.payment_method === 'nigerian_bank') {
+      if (!formData.bank_name || !formData.account_number || !formData.account_name) {
+        toast({
+          title: 'Missing information',
+          description: 'Please fill in all bank details',
+          variant: 'destructive',
+        });
+        return;
+      }
+    }
+
     setLoading(true);
     try {
+      const paymentDetails = formData.payment_method === 'nigerian_bank' 
+        ? {
+            bank_name: formData.bank_name,
+            account_number: formData.account_number,
+            account_name: formData.account_name,
+            currency: 'NGN'
+          }
+        : { 
+            account: formData.account_details,
+            currency: wallet.currency_type 
+          };
+
       const { error } = await supabase
         .from('withdrawals')
         .insert({
           user_id: user.id,
           amount,
           payment_method: formData.payment_method,
-          payment_details: { account: formData.account_details },
+          payment_details: paymentDetails,
           status: 'pending',
         });
 
@@ -75,7 +136,10 @@ export default function WithdrawalForm() {
 
       setFormData({
         amount: '',
-        payment_method: 'bank_transfer',
+        payment_method: wallet.currency_type === 'NGN' ? 'nigerian_bank' : 'bank_transfer',
+        bank_name: '',
+        account_number: '',
+        account_name: '',
         account_details: '',
       });
       fetchWallet();
@@ -128,28 +192,100 @@ export default function WithdrawalForm() {
               onValueChange={(value) => setFormData({ ...formData, payment_method: value })}
             >
               <SelectTrigger>
-                <SelectValue />
+                <SelectValue placeholder="Select payment method" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="bank_transfer">Bank Transfer</SelectItem>
-                <SelectItem value="paypal">PayPal</SelectItem>
-                <SelectItem value="crypto">Cryptocurrency</SelectItem>
+                {wallet?.currency_type === 'NGN' ? (
+                  <>
+                    <SelectItem value="nigerian_bank">Nigerian Bank Transfer</SelectItem>
+                    <SelectItem value="paypal">PayPal</SelectItem>
+                    <SelectItem value="crypto">Cryptocurrency</SelectItem>
+                  </>
+                ) : (
+                  <>
+                    <SelectItem value="bank_transfer">Bank Transfer</SelectItem>
+                    <SelectItem value="paypal">PayPal</SelectItem>
+                    <SelectItem value="crypto">Cryptocurrency</SelectItem>
+                  </>
+                )}
               </SelectContent>
             </Select>
           </div>
 
-          <div className="space-y-2">
-            <Label htmlFor="account_details">Account Details</Label>
-            <Input
-              id="account_details"
-              placeholder="Bank account, email, or wallet address"
-              value={formData.account_details}
-              onChange={(e) => setFormData({ ...formData, account_details: e.target.value })}
-              required
-            />
-          </div>
+          {formData.payment_method === 'nigerian_bank' && (
+            <>
+              <div className="space-y-2">
+                <Label htmlFor="bank_name">Bank Name</Label>
+                <Select
+                  value={formData.bank_name}
+                  onValueChange={(value) => setFormData({ ...formData, bank_name: value })}
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select your bank" />
+                  </SelectTrigger>
+                  <SelectContent className="max-h-[300px]">
+                    {nigerianBanks.map((bank) => (
+                      <SelectItem key={bank} value={bank}>
+                        {bank}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
 
-          <Button type="submit" disabled={loading} className="w-full">
+              <div className="space-y-2">
+                <Label htmlFor="account_number">Account Number</Label>
+                <Input
+                  id="account_number"
+                  type="text"
+                  placeholder="0123456789"
+                  value={formData.account_number}
+                  onChange={(e) => setFormData({ ...formData, account_number: e.target.value })}
+                  maxLength={10}
+                  required
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="account_name">Account Name</Label>
+                <Input
+                  id="account_name"
+                  type="text"
+                  placeholder="Account holder name"
+                  value={formData.account_name}
+                  onChange={(e) => setFormData({ ...formData, account_name: e.target.value })}
+                  required
+                />
+              </div>
+            </>
+          )}
+
+          {formData.payment_method && formData.payment_method !== 'nigerian_bank' && (
+            <div className="space-y-2">
+              <Label htmlFor="account_details">
+                {formData.payment_method === 'paypal' 
+                  ? 'PayPal Email' 
+                  : formData.payment_method === 'crypto' 
+                  ? 'Wallet Address' 
+                  : 'Account Details'}
+              </Label>
+              <Input
+                id="account_details"
+                placeholder={
+                  formData.payment_method === 'paypal' 
+                    ? 'your-email@example.com' 
+                    : formData.payment_method === 'crypto' 
+                    ? 'Your crypto wallet address' 
+                    : 'Bank account details'
+                }
+                value={formData.account_details}
+                onChange={(e) => setFormData({ ...formData, account_details: e.target.value })}
+                required
+              />
+            </div>
+          )}
+
+          <Button type="submit" disabled={loading || !formData.payment_method} className="w-full">
             {loading ? 'Submitting...' : 'Submit Withdrawal Request'}
           </Button>
         </form>

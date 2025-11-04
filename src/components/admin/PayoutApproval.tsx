@@ -198,13 +198,19 @@ export default function PayoutApproval() {
                   </Badge>
                 </div>
                 <p className="text-sm text-muted-foreground">
-                  {withdrawal.payment_method.replace('_', ' ')} • {new Date(withdrawal.created_at).toLocaleDateString()}
+                  {withdrawal.payment_method === 'nigerian_bank' ? 'Nigerian Bank Transfer' : withdrawal.payment_method.replace('_', ' ')} • {new Date(withdrawal.created_at).toLocaleDateString()}
                 </p>
-                {withdrawal.payment_details?.account && (
+                {withdrawal.payment_method === 'nigerian_bank' ? (
+                  <div className="text-xs text-muted-foreground mt-2 space-y-1">
+                    <p><strong>Bank:</strong> {withdrawal.payment_details?.bank_name}</p>
+                    <p><strong>Account:</strong> {withdrawal.payment_details?.account_number}</p>
+                    <p><strong>Name:</strong> {withdrawal.payment_details?.account_name}</p>
+                  </div>
+                ) : withdrawal.payment_details?.account ? (
                   <p className="text-xs text-muted-foreground mt-1">
                     Account: {withdrawal.payment_details.account}
                   </p>
-                )}
+                ) : null}
               </div>
               <div className="flex items-center gap-4">
                 <p className="text-xl font-bold">
