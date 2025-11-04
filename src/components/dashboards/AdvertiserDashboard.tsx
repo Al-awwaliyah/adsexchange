@@ -7,6 +7,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import CampaignForm from '@/components/campaigns/CampaignForm';
 import CampaignCard from '@/components/campaigns/CampaignCard';
 import CampaignAnalytics from '@/components/campaigns/CampaignAnalytics';
+import TaskReview from '@/components/tasks/TaskReview';
 import { LogOut, Plus, BarChart3, Wallet } from 'lucide-react';
 
 const AdvertiserDashboard = () => {
@@ -136,6 +137,7 @@ const AdvertiserDashboard = () => {
         <Tabs defaultValue="campaigns" className="space-y-4">
           <TabsList>
             <TabsTrigger value="campaigns">Campaigns</TabsTrigger>
+            <TabsTrigger value="review">Task Review</TabsTrigger>
             <TabsTrigger value="analytics">Analytics</TabsTrigger>
             <TabsTrigger value="billing">Billing</TabsTrigger>
           </TabsList>
@@ -188,6 +190,14 @@ const AdvertiserDashboard = () => {
                 onCancel={handleCancel}
               />
             )}
+          </TabsContent>
+
+          <TabsContent value="review" className="space-y-4">
+            <div>
+              <h2 className="text-2xl font-bold">Task Review</h2>
+              <p className="text-muted-foreground">Review and approve submitted tasks</p>
+            </div>
+            <TaskReview />
           </TabsContent>
 
           <TabsContent value="analytics" className="space-y-4">
