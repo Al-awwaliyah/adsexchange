@@ -1,9 +1,81 @@
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
 import AdvertiserDashboard from '@/components/dashboards/AdvertiserDashboard';
 import PublisherDashboard from '@/components/dashboards/PublisherDashboard';
 import AdminDashboard from '@/components/dashboards/AdminDashboard';
+import { supabase } from '@/integrations/supabase/client';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
+import { Label } from '@/components/ui/label';
+import { Megaphone, Users } from 'lucide-react';
+import { toast } from '@/hooks/use-toast';
+
+type AppRole = 'advertiser' | 'publisher' | 'admin';
+
+const RoleSelector = ({ userId, onRoleSelected }: { userId: string; onRoleSelected: () => void }) => {
+  const [selectedRole, setSelectedRole] = useState<AppRole>('advertiser');
+  const [loading, setLoading] = useState(false);
+
+  const handleRoleSelection = async () => {
+    setLoading(true);
+    const { error } = await supabase
+      .from('user_roles')
+      .insert({ user_id: userId, role: selectedRole });
+
+    if (error) {
+      toast({
+        title: 'Error',
+        description: 'Failed to assign role. Please try again.',
+        variant: 'destructive'
+      });
+      setLoading(false);
+    } else {
+      toast({
+        title: 'Success!',
+        description: 'Your role has been assigned. Loading your dashboard...'
+      });
+      setTimeout(onRoleSelected, 1000);
+    }
+  };
+
+  return (
+    <Card className="w-full">
+      <CardHeader>
+        <CardTitle>Select Your Role</CardTitle>
+        <CardDescription>Choose how you want to use AdExchange</CardDescription>
+      </CardHeader>
+      <CardContent className="space-y-4">
+        <RadioGroup value={selectedRole} onValueChange={(value: any) => setSelectedRole(value)}>
+          <div className="flex items-center space-x-2 p-3 border rounded-md hover:bg-accent">
+            <RadioGroupItem value="advertiser" id="advertiser" />
+            <Label htmlFor="advertiser" className="flex items-center gap-2 cursor-pointer flex-1">
+              <Megaphone className="h-4 w-4" />
+              <div>
+                <div className="font-medium">Advertiser</div>
+                <div className="text-xs text-muted-foreground">Create campaigns and reach audiences</div>
+              </div>
+            </Label>
+          </div>
+          <div className="flex items-center space-x-2 p-3 border rounded-md hover:bg-accent">
+            <RadioGroupItem value="publisher" id="publisher" />
+            <Label htmlFor="publisher" className="flex items-center gap-2 cursor-pointer flex-1">
+              <Users className="h-4 w-4" />
+              <div>
+                <div className="font-medium">Publisher</div>
+                <div className="text-xs text-muted-foreground">Complete tasks and earn money</div>
+              </div>
+            </Label>
+          </div>
+        </RadioGroup>
+        <Button onClick={handleRoleSelection} className="w-full" disabled={loading}>
+          {loading ? 'Assigning role...' : 'Continue'}
+        </Button>
+      </CardContent>
+    </Card>
+  );
+};
 
 const Dashboard = () => {
   const { user, roles, loading } = useAuth();
@@ -41,10 +113,11 @@ const Dashboard = () => {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center">
-      <div className="text-center">
-        <h2 className="text-2xl font-bold mb-2">No Role Assigned</h2>
-        <p className="text-muted-foreground">Please contact support to get a role assigned.</p>
+    <div className="min-h-screen flex items-center justify-center bg-background p-4">
+      <div className="text-center max-w-md">
+        <h2 className="text-2xl font-bold mb-2">Welcome to AdExchange!</h2>
+        <p className="text-muted-foreground mb-6">To get started, please select your role:</p>
+        <RoleSelector userId={user.id} onRoleSelected={() => window.location.reload()} />
       </div>
     </div>
   );
