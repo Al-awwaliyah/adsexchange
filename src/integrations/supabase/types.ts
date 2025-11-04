@@ -14,16 +14,278 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      campaigns: {
+        Row: {
+          advertiser_id: string
+          budget: number
+          created_at: string | null
+          creative_url: string | null
+          criteria: Json | null
+          description: string | null
+          id: string
+          payout: number
+          status: string | null
+          title: string
+          updated_at: string | null
+        }
+        Insert: {
+          advertiser_id: string
+          budget: number
+          created_at?: string | null
+          creative_url?: string | null
+          criteria?: Json | null
+          description?: string | null
+          id?: string
+          payout: number
+          status?: string | null
+          title: string
+          updated_at?: string | null
+        }
+        Update: {
+          advertiser_id?: string
+          budget?: number
+          created_at?: string | null
+          creative_url?: string | null
+          criteria?: Json | null
+          description?: string | null
+          id?: string
+          payout?: number
+          status?: string | null
+          title?: string
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
+      profiles: {
+        Row: {
+          avatar_url: string | null
+          created_at: string | null
+          full_name: string | null
+          id: string
+          updated_at: string | null
+        }
+        Insert: {
+          avatar_url?: string | null
+          created_at?: string | null
+          full_name?: string | null
+          id: string
+          updated_at?: string | null
+        }
+        Update: {
+          avatar_url?: string | null
+          created_at?: string | null
+          full_name?: string | null
+          id?: string
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
+      social_accounts: {
+        Row: {
+          account_url: string
+          created_at: string | null
+          followers_count: number | null
+          id: string
+          platform: string
+          publisher_id: string
+          verified: boolean | null
+        }
+        Insert: {
+          account_url: string
+          created_at?: string | null
+          followers_count?: number | null
+          id?: string
+          platform: string
+          publisher_id: string
+          verified?: boolean | null
+        }
+        Update: {
+          account_url?: string
+          created_at?: string | null
+          followers_count?: number | null
+          id?: string
+          platform?: string
+          publisher_id?: string
+          verified?: boolean | null
+        }
+        Relationships: []
+      }
+      tasks: {
+        Row: {
+          campaign_id: string
+          claimed_at: string | null
+          created_at: string | null
+          id: string
+          proof_url: string | null
+          publisher_id: string | null
+          reviewed_at: string | null
+          status: string | null
+          submitted_at: string | null
+        }
+        Insert: {
+          campaign_id: string
+          claimed_at?: string | null
+          created_at?: string | null
+          id?: string
+          proof_url?: string | null
+          publisher_id?: string | null
+          reviewed_at?: string | null
+          status?: string | null
+          submitted_at?: string | null
+        }
+        Update: {
+          campaign_id?: string
+          claimed_at?: string | null
+          created_at?: string | null
+          id?: string
+          proof_url?: string | null
+          publisher_id?: string | null
+          reviewed_at?: string | null
+          status?: string | null
+          submitted_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "tasks_campaign_id_fkey"
+            columns: ["campaign_id"]
+            isOneToOne: false
+            referencedRelation: "campaigns"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      transactions: {
+        Row: {
+          amount: number
+          created_at: string | null
+          from_user_id: string | null
+          id: string
+          metadata: Json | null
+          reference: string | null
+          status: string | null
+          to_user_id: string | null
+          transaction_type: string | null
+        }
+        Insert: {
+          amount: number
+          created_at?: string | null
+          from_user_id?: string | null
+          id?: string
+          metadata?: Json | null
+          reference?: string | null
+          status?: string | null
+          to_user_id?: string | null
+          transaction_type?: string | null
+        }
+        Update: {
+          amount?: number
+          created_at?: string | null
+          from_user_id?: string | null
+          id?: string
+          metadata?: Json | null
+          reference?: string | null
+          status?: string | null
+          to_user_id?: string | null
+          transaction_type?: string | null
+        }
+        Relationships: []
+      }
+      user_roles: {
+        Row: {
+          created_at: string | null
+          id: string
+          role: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          role: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          role?: Database["public"]["Enums"]["app_role"]
+          user_id?: string
+        }
+        Relationships: []
+      }
+      wallets: {
+        Row: {
+          balance: number | null
+          created_at: string | null
+          currency: string | null
+          id: string
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          balance?: number | null
+          created_at?: string | null
+          currency?: string | null
+          id?: string
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          balance?: number | null
+          created_at?: string | null
+          currency?: string | null
+          id?: string
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
+      withdrawals: {
+        Row: {
+          amount: number
+          created_at: string | null
+          id: string
+          payment_details: Json | null
+          payment_method: string | null
+          processed_at: string | null
+          status: string | null
+          user_id: string
+        }
+        Insert: {
+          amount: number
+          created_at?: string | null
+          id?: string
+          payment_details?: Json | null
+          payment_method?: string | null
+          processed_at?: string | null
+          status?: string | null
+          user_id: string
+        }
+        Update: {
+          amount?: number
+          created_at?: string | null
+          id?: string
+          payment_details?: Json | null
+          payment_method?: string | null
+          processed_at?: string | null
+          status?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      has_role: {
+        Args: {
+          _role: Database["public"]["Enums"]["app_role"]
+          _user_id: string
+        }
+        Returns: boolean
+      }
     }
     Enums: {
-      [_ in never]: never
+      app_role: "advertiser" | "publisher" | "admin"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -150,6 +412,8 @@ export type CompositeTypes<
 
 export const Constants = {
   public: {
-    Enums: {},
+    Enums: {
+      app_role: ["advertiser", "publisher", "admin"],
+    },
   },
 } as const
