@@ -53,7 +53,7 @@ serve(async (req) => {
           name: name || profile?.full_name || 'User',
         },
         customizations: {
-          title: 'Wallet Deposit',
+          title: 'AdsExchange',
           description: 'Add funds to your wallet',
         },
         meta: {
