@@ -111,11 +111,11 @@ export default function PaymentHistory() {
         }
       }
 
-      // Fetch withdrawals
+      // Fetch withdrawals (exclude sensitive payment_details)
       if (typeFilter === 'all' || typeFilter === 'withdrawal') {
         let withdrawalQuery = supabase
           .from('withdrawals')
-          .select('*')
+          .select('id, user_id, amount, status, created_at, payment_method, processed_at')
           .eq('user_id', user?.id)
           .order('created_at', { ascending: false });
 
