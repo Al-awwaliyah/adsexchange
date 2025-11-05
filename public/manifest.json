@@ -1,0 +1,23 @@
+{
+  "name": "AdsExchange",
+  "short_name": "AdsExchange",
+  "description": "Connect advertisers with promoters for effective social media marketing campaigns",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#5B9FED",
+  "icons": [
+    {
+      "src": "/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}
