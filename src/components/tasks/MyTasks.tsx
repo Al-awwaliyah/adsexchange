@@ -3,6 +3,8 @@ import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/hooks/use-toast';
 import { useCurrency } from '@/hooks/useCurrency';
+import { taskProofSchema } from '@/lib/validation';
+import { z } from 'zod';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -77,10 +79,13 @@ export default function MyTasks() {
 
     setSubmitting(true);
     try {
+      // Validate proof URL before submission
+      const validatedData = taskProofSchema.parse({ proof_url: proofUrl });
+
       const { error } = await supabase
         .from('tasks')
         .update({
-          proof_url: proofUrl,
+          proof_url: validatedData.proof_url,
           status: 'submitted',
           submitted_at: new Date().toISOString(),
         })
@@ -93,11 +98,19 @@ export default function MyTasks() {
       setSelectedTask(null);
       fetchMyTasks();
     } catch (error: any) {
-      toast({
-        title: 'Error submitting proof',
-        description: error.message,
-        variant: 'destructive',
-      });
+      if (error instanceof z.ZodError) {
+        toast({
+          title: 'Invalid proof URL',
+          description: error.errors[0]?.message || 'Please provide a valid URL',
+          variant: 'destructive',
+        });
+      } else {
+        toast({
+          title: 'Error submitting proof',
+          description: error.message,
+          variant: 'destructive',
+        });
+      }
     } finally {
       setSubmitting(false);
     }
