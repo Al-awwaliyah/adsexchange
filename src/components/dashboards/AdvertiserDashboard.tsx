@@ -10,6 +10,8 @@ import CampaignCard from '@/components/campaigns/CampaignCard';
 import CampaignAnalytics from '@/components/campaigns/CampaignAnalytics';
 import TaskReview from '@/components/tasks/TaskReview';
 import CurrencySettings from '@/components/settings/CurrencySettings';
+import DepositForm from '@/components/wallet/DepositForm';
+import TransactionHistory from '@/components/wallet/TransactionHistory';
 import { LogOut, Plus, BarChart3, Wallet, AlertCircle } from 'lucide-react';
 
 const AdvertiserDashboard = () => {
@@ -272,16 +274,19 @@ const AdvertiserDashboard = () => {
             )}
           </TabsContent>
 
-          <TabsContent value="billing">
-            <Card>
-              <CardHeader>
-                <CardTitle>Billing & Transactions</CardTitle>
-                <CardDescription>View your transaction history</CardDescription>
-              </CardHeader>
-              <CardContent>
-                <p className="text-muted-foreground">No transactions yet</p>
-              </CardContent>
-            </Card>
+          <TabsContent value="billing" className="space-y-6">
+            <div className="grid gap-6 md:grid-cols-2">
+              <DepositForm />
+              <Card>
+                <CardHeader>
+                  <CardTitle>Wallet Balance</CardTitle>
+                  <CardDescription>
+                    Current balance: {wallet?.currency_type === 'NGN' ? '₦' : '$'}{wallet?.balance || '0.00'}
+                  </CardDescription>
+                </CardHeader>
+              </Card>
+            </div>
+            <TransactionHistory />
           </TabsContent>
 
           <TabsContent value="settings">

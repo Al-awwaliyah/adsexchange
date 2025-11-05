@@ -1,1 +1,7 @@
 project_id = "ywrgibkaacpqdhimswul"
+
+[functions.flutterwave-initialize-payment]
+verify_jwt = true
+
+[functions.flutterwave-verify-payment]
+verify_jwt = true
