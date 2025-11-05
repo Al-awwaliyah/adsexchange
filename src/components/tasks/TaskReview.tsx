@@ -25,46 +25,29 @@ export default function TaskReview() {
 
   const fetchSubmittedTasks = async () => {
     try {
-      // Fetch tasks
-      let tasksQuery = supabase
+      // Fetch tasks with joins - RLS will automatically filter based on user permissions
+      const { data: tasks, error: tasksError } = await supabase
         .from('tasks')
-        .select('*')
+        .select(`
+          *,
+          campaigns:campaign_id (
+            id,
+            title,
+            payout,
+            advertiser_id
+          ),
+          profiles:promoter_id (
+            id,
+            full_name
+          )
+        `)
         .eq('status', 'submitted')
         .order('submitted_at', { ascending: false });
 
-      const { data: tasks, error: tasksError } = await tasksQuery;
-
       if (tasksError) throw tasksError;
 
-      // Fetch campaigns
-      const { data: campaigns, error: campaignsError } = await supabase
-        .from('campaigns')
-        .select('*');
-
-      if (campaignsError) throw campaignsError;
-
-      // Fetch profiles
-      const { data: profiles, error: profilesError } = await supabase
-        .from('profiles')
-        .select('*');
-
-      if (profilesError) throw profilesError;
-
-      // Combine the data
-      let combinedTasks = tasks?.map(task => ({
-        ...task,
-        campaigns: campaigns?.find(c => c.id === task.campaign_id) || null,
-        profiles: profiles?.find(p => p.id === task.promoter_id) || null
-      })) || [];
-
-      // If advertiser (not admin), filter to only their campaigns
-      if (!hasRole('admin')) {
-        combinedTasks = combinedTasks.filter(task => 
-          task.campaigns?.advertiser_id === user?.id
-        );
-      }
-
-      setTasks(combinedTasks);
+      // No client-side filtering - trust RLS policies
+      setTasks(tasks || []);
     } catch (error) {
       console.error('Error fetching tasks:', error);
     } finally {
@@ -75,71 +58,16 @@ export default function TaskReview() {
   const handleApprove = async (task: any) => {
     setProcessing(true);
     try {
-      // Update task status
-      const { error: taskError } = await supabase
-        .from('tasks')
-        .update({
-          status: 'completed',
-          reviewed_at: new Date().toISOString(),
-        })
-        .eq('id', task.id);
+      const { data, error } = await supabase.functions.invoke('approve-task', {
+        body: {
+          taskId: task.id,
+          action: 'approve',
+        },
+      });
 
-      if (taskError) throw taskError;
+      if (error) throw error;
 
-      // Update promoter wallet
-      const { data: wallet, error: walletFetchError } = await supabase
-        .from('wallets')
-        .select('balance')
-        .eq('user_id', task.promoter_id)
-        .single();
-
-      if (walletFetchError) throw walletFetchError;
-
-      const newBalance = (wallet.balance || 0) + task.campaigns.payout;
-
-      const { error: walletUpdateError } = await supabase
-        .from('wallets')
-        .update({ balance: newBalance })
-        .eq('user_id', task.promoter_id);
-
-      if (walletUpdateError) throw walletUpdateError;
-
-      // Create transaction record
-      const { error: transactionError } = await supabase
-        .from('transactions')
-        .insert({
-          from_user_id: task.campaigns.advertiser_id,
-          to_user_id: task.promoter_id,
-          amount: task.campaigns.payout,
-          transaction_type: 'task_payout',
-          status: 'completed',
-          reference: task.id,
-        });
-
-      if (transactionError) throw transactionError;
-
-      // Send email notification
-      try {
-        const { data: promoterAuth } = await supabase.auth.admin.getUserById(task.promoter_id);
-        if (promoterAuth.user?.email) {
-          await supabase.functions.invoke('send-notification-email', {
-            body: {
-              type: 'task_approved',
-              to: promoterAuth.user.email,
-              data: {
-                promoterName: task.profiles?.full_name || 'User',
-                campaignTitle: task.campaigns?.title,
-                payout: `$${task.campaigns?.payout}`,
-                dashboardUrl: `${window.location.origin}/dashboard`,
-              },
-            },
-          });
-        }
-      } catch (emailError) {
-        console.error('Error sending email:', emailError);
-      }
-
-      toast({ title: 'Task approved and payment processed!' });
+      toast({ title: data.message || 'Task approved and payment processed!' });
       fetchSubmittedTasks();
     } catch (error: any) {
       toast({
@@ -163,17 +91,17 @@ export default function TaskReview() {
 
     setProcessing(true);
     try {
-      const { error } = await supabase
-        .from('tasks')
-        .update({
-          status: 'rejected',
-          reviewed_at: new Date().toISOString(),
-        })
-        .eq('id', selectedTask.id);
+      const { data, error } = await supabase.functions.invoke('approve-task', {
+        body: {
+          taskId: selectedTask.id,
+          action: 'reject',
+          rejectionReason: rejectionReason,
+        },
+      });
 
       if (error) throw error;
 
-      toast({ title: 'Task rejected' });
+      toast({ title: data.message || 'Task rejected' });
       setRejectionReason('');
       setSelectedTask(null);
       fetchSubmittedTasks();

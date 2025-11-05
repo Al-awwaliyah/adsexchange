@@ -8,6 +8,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { campaignSchema } from '@/lib/validation';
 
 interface CampaignFormProps {
   campaign?: any;
@@ -37,26 +38,40 @@ export default function CampaignForm({ campaign, onSuccess, onCancel }: Campaign
 
     setLoading(true);
 
-    const criteria = {
-      platform: formData.platform,
-      min_followers: formData.min_followers ? parseInt(formData.min_followers) : null,
-      region: formData.region || null,
-      start_date: formData.start_date || null,
-      end_date: formData.end_date || null,
-    };
-
-    const campaignData = {
-      advertiser_id: user.id,
-      title: formData.title,
-      description: formData.description,
-      budget: parseFloat(formData.budget),
-      payout: parseFloat(formData.payout),
-      creative_url: formData.creative_url,
-      criteria,
-      status: 'draft',
-    };
-
     try {
+      // Validate form data
+      const validatedData = campaignSchema.parse({
+        title: formData.title,
+        description: formData.description,
+        budget: parseFloat(formData.budget),
+        payout: parseFloat(formData.payout),
+        creative_url: formData.creative_url,
+        platform: formData.platform,
+        min_followers: formData.min_followers ? parseInt(formData.min_followers) : undefined,
+        region: formData.region,
+        start_date: formData.start_date,
+        end_date: formData.end_date,
+      });
+
+      const criteria = {
+        platform: validatedData.platform,
+        min_followers: validatedData.min_followers || null,
+        region: validatedData.region || null,
+        start_date: validatedData.start_date || null,
+        end_date: validatedData.end_date || null,
+      };
+
+      const campaignData = {
+        advertiser_id: user.id,
+        title: validatedData.title,
+        description: validatedData.description || null,
+        budget: validatedData.budget,
+        payout: validatedData.payout,
+        creative_url: validatedData.creative_url || null,
+        criteria,
+        status: 'draft',
+      };
+
       if (campaign) {
         const { error } = await supabase
           .from('campaigns')
@@ -76,11 +91,21 @@ export default function CampaignForm({ campaign, onSuccess, onCancel }: Campaign
 
       onSuccess?.();
     } catch (error: any) {
-      toast({
-        title: 'Error',
-        description: error.message,
-        variant: 'destructive',
-      });
+      if (error.errors) {
+        // Zod validation error
+        const firstError = error.errors[0];
+        toast({
+          title: 'Validation Error',
+          description: firstError.message,
+          variant: 'destructive',
+        });
+      } else {
+        toast({
+          title: 'Error',
+          description: error.message,
+          variant: 'destructive',
+        });
+      }
     } finally {
       setLoading(false);
     }

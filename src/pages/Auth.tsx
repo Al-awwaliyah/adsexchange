@@ -10,6 +10,7 @@ import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { useAuth } from '@/hooks/useAuth';
 import { toast } from '@/hooks/use-toast';
 import { Megaphone, Users, Shield } from 'lucide-react';
+import { authSchema } from '@/lib/validation';
 
 const Auth = () => {
   const navigate = useNavigate();
@@ -38,27 +39,54 @@ const Auth = () => {
     e.preventDefault();
     setLoading(true);
 
-    const { error } = await signUp(
-      signUpData.email,
-      signUpData.password,
-      signUpData.fullName,
-      signUpData.role,
-      signUpData.currency
-    );
-
-    setLoading(false);
-
-    if (error) {
-      toast({
-        title: 'Sign up failed',
-        description: error.message,
-        variant: 'destructive'
+    try {
+      // Validate form data
+      const validatedData = authSchema.parse({
+        email: signUpData.email,
+        password: signUpData.password,
+        fullName: signUpData.fullName,
+        role: signUpData.role,
+        currency: signUpData.currency,
       });
-    } else {
-      toast({
-        title: 'Success!',
-        description: 'Please check your email to confirm your account.'
-      });
+
+      const { error } = await signUp(
+        validatedData.email,
+        validatedData.password,
+        validatedData.fullName!,
+        validatedData.role!,
+        validatedData.currency!
+      );
+
+      if (error) {
+        toast({
+          title: 'Sign up failed',
+          description: error.message,
+          variant: 'destructive'
+        });
+      } else {
+        toast({
+          title: 'Success!',
+          description: 'Please check your email to confirm your account.'
+        });
+      }
+    } catch (error: any) {
+      if (error.errors) {
+        // Zod validation error
+        const firstError = error.errors[0];
+        toast({
+          title: 'Validation Error',
+          description: firstError.message,
+          variant: 'destructive'
+        });
+      } else {
+        toast({
+          title: 'Error',
+          description: error.message,
+          variant: 'destructive'
+        });
+      }
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -66,18 +94,39 @@ const Auth = () => {
     e.preventDefault();
     setLoading(true);
 
-    const { error } = await signIn(signInData.email, signInData.password);
-
-    setLoading(false);
-
-    if (error) {
-      toast({
-        title: 'Sign in failed',
-        description: error.message,
-        variant: 'destructive'
+    try {
+      // Basic email validation for sign-in (no strict password validation)
+      const validatedData = authSchema.partial({ password: true, fullName: true, role: true, currency: true }).parse({
+        email: signInData.email,
       });
-    } else {
-      navigate('/dashboard');
+
+      const { error } = await signIn(validatedData.email, signInData.password);
+
+      if (error) {
+        toast({
+          title: 'Sign in failed',
+          description: error.message,
+          variant: 'destructive'
+        });
+      } else {
+        navigate('/dashboard');
+      }
+    } catch (error: any) {
+      if (error.errors) {
+        toast({
+          title: 'Validation Error',
+          description: error.errors[0].message,
+          variant: 'destructive'
+        });
+      } else {
+        toast({
+          title: 'Error',
+          description: error.message,
+          variant: 'destructive'
+        });
+      }
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -156,8 +205,11 @@ const Auth = () => {
                     value={signUpData.password}
                     onChange={(e) => setSignUpData({ ...signUpData, password: e.target.value })}
                     required
-                    minLength={6}
+                    minLength={8}
                   />
+                  <p className="text-xs text-muted-foreground">
+                    Must be at least 8 characters with uppercase, lowercase, and a number
+                  </p>
                 </div>
                 <div className="space-y-3">
                   <Label>I am a...</Label>

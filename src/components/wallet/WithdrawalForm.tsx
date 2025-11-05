@@ -8,6 +8,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { DollarSign } from 'lucide-react';
+import { withdrawalSchema } from '@/lib/validation';
 
 export default function WithdrawalForm() {
   const { user } = useAuth();
@@ -82,6 +83,8 @@ export default function WithdrawalForm() {
     if (!user || !wallet) return;
 
     const amount = parseFloat(formData.amount);
+    
+    // Check balance before validation
     if (amount <= 0 || amount > parseFloat(wallet.balance)) {
       toast({
         title: 'Invalid amount',
@@ -91,29 +94,27 @@ export default function WithdrawalForm() {
       return;
     }
 
-    // Validate Nigerian bank details
-    if (wallet.currency_type === 'NGN' && formData.payment_method === 'nigerian_bank') {
-      if (!formData.bank_name || !formData.account_number || !formData.account_name) {
-        toast({
-          title: 'Missing information',
-          description: 'Please fill in all bank details',
-          variant: 'destructive',
-        });
-        return;
-      }
-    }
-
     setLoading(true);
     try {
-      const paymentDetails = formData.payment_method === 'nigerian_bank' 
+      // Validate form data
+      const validatedData = withdrawalSchema.parse({
+        amount,
+        payment_method: formData.payment_method,
+        bank_name: formData.bank_name,
+        account_number: formData.account_number,
+        account_name: formData.account_name,
+        account_details: formData.account_details,
+      });
+
+      const paymentDetails = validatedData.payment_method === 'nigerian_bank' 
         ? {
-            bank_name: formData.bank_name,
-            account_number: formData.account_number,
-            account_name: formData.account_name,
+            bank_name: validatedData.bank_name!,
+            account_number: validatedData.account_number!,
+            account_name: validatedData.account_name!,
             currency: 'NGN'
           }
         : { 
-            account: formData.account_details,
+            account: validatedData.account_details!,
             currency: wallet.currency_type 
           };
 
@@ -121,8 +122,8 @@ export default function WithdrawalForm() {
         .from('withdrawals')
         .insert({
           user_id: user.id,
-          amount,
-          payment_method: formData.payment_method,
+          amount: validatedData.amount,
+          payment_method: validatedData.payment_method,
           payment_details: paymentDetails,
           status: 'pending',
         });
@@ -144,11 +145,21 @@ export default function WithdrawalForm() {
       });
       fetchWallet();
     } catch (error: any) {
-      toast({
-        title: 'Error submitting withdrawal',
-        description: error.message,
-        variant: 'destructive',
-      });
+      if (error.errors) {
+        // Zod validation error
+        const firstError = error.errors[0];
+        toast({
+          title: 'Validation Error',
+          description: firstError.message,
+          variant: 'destructive',
+        });
+      } else {
+        toast({
+          title: 'Error submitting withdrawal',
+          description: error.message,
+          variant: 'destructive',
+        });
+      }
     } finally {
       setLoading(false);
     }
