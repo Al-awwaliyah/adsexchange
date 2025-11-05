@@ -12,10 +12,12 @@ import TaskReview from '@/components/tasks/TaskReview';
 import CurrencySettings from '@/components/settings/CurrencySettings';
 import DepositForm from '@/components/wallet/DepositForm';
 import TransactionHistory from '@/components/wallet/TransactionHistory';
-import { LogOut, Plus, BarChart3, Wallet, AlertCircle } from 'lucide-react';
+import { LogOut, Plus, BarChart3, Wallet, AlertCircle, History } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 
 const AdvertiserDashboard = () => {
   const { user, signOut } = useAuth();
+  const navigate = useNavigate();
   const [campaigns, setCampaigns] = useState<any[]>([]);
   const [wallet, setWallet] = useState<any>(null);
   const [profile, setProfile] = useState<any>(null);
@@ -286,6 +288,13 @@ const AdvertiserDashboard = () => {
                   </CardDescription>
                 </CardHeader>
               </Card>
+            </div>
+            <div className="flex justify-between items-center mb-4">
+              <h3 className="text-lg font-semibold">Recent Transactions</h3>
+              <Button variant="outline" size="sm" onClick={() => navigate('/payment-history')}>
+                <History className="h-4 w-4 mr-2" />
+                View Full History
+              </Button>
             </div>
             <TransactionHistory />
           </TabsContent>

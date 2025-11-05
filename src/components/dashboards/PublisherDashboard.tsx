@@ -10,10 +10,12 @@ import MyTasks from '@/components/tasks/MyTasks';
 import WithdrawalForm from '@/components/wallet/WithdrawalForm';
 import TransactionHistory from '@/components/wallet/TransactionHistory';
 import CurrencySettings from '@/components/settings/CurrencySettings';
-import { LogOut, DollarSign, CheckCircle, AlertCircle } from 'lucide-react';
+import { LogOut, DollarSign, CheckCircle, AlertCircle, History } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 
 const PublisherDashboard = () => {
   const { user, signOut } = useAuth();
+  const navigate = useNavigate();
   const [wallet, setWallet] = useState<any>(null);
   const [profile, setProfile] = useState<any>(null);
   const [earnings, setEarnings] = useState(0);
@@ -166,10 +168,24 @@ const PublisherDashboard = () => {
 
           <TabsContent value="withdraw" className="space-y-6">
             <WithdrawalForm />
+            <div className="flex justify-between items-center mb-4">
+              <h3 className="text-lg font-semibold">Recent Transactions</h3>
+              <Button variant="outline" size="sm" onClick={() => navigate('/payment-history')}>
+                <History className="h-4 w-4 mr-2" />
+                View Full History
+              </Button>
+            </div>
             <TransactionHistory />
           </TabsContent>
 
           <TabsContent value="transactions">
+            <div className="flex justify-between items-center mb-4">
+              <h3 className="text-lg font-semibold">Recent Transactions</h3>
+              <Button variant="outline" size="sm" onClick={() => navigate('/payment-history')}>
+                <History className="h-4 w-4 mr-2" />
+                View Full History
+              </Button>
+            </div>
             <TransactionHistory />
           </TabsContent>
 
