@@ -175,6 +175,34 @@ export default function CampaignApproval() {
     }
   };
 
+  const handleToggleStatus = async (campaignId: string, currentStatus: string) => {
+    setProcessing(campaignId);
+    try {
+      const newStatus = currentStatus === 'active' ? 'paused' : 'active';
+      const { error } = await supabase
+        .from('campaigns')
+        .update({ status: newStatus })
+        .eq('id', campaignId);
+
+      if (error) throw error;
+
+      toast({
+        title: `Campaign ${newStatus}`,
+        description: `Campaign status changed to ${newStatus}`,
+      });
+
+      fetchPendingCampaigns();
+    } catch (error: any) {
+      toast({
+        title: 'Error updating campaign',
+        description: error.message,
+        variant: 'destructive',
+      });
+    } finally {
+      setProcessing(null);
+    }
+  };
+
   if (loading) {
     return <div className="text-center py-8">Loading campaigns...</div>;
   }
@@ -240,7 +268,7 @@ export default function CampaignApproval() {
               </div>
             )}
 
-            {!campaign.approved && (
+            {!campaign.approved ? (
               <div className="flex gap-2 pt-4">
                 <Button
                   onClick={() => handleApprove(campaign.id, campaign.advertiser_id, campaign.budget)}
@@ -258,6 +286,17 @@ export default function CampaignApproval() {
                 >
                   <XCircle className="w-4 h-4 mr-2" />
                   Reject
+                </Button>
+              </div>
+            ) : (
+              <div className="flex gap-2 pt-4">
+                <Button
+                  onClick={() => handleToggleStatus(campaign.id, campaign.status)}
+                  disabled={processing === campaign.id}
+                  variant={campaign.status === 'active' ? 'outline' : 'default'}
+                  className="flex-1"
+                >
+                  {campaign.status === 'active' ? 'Pause Campaign' : 'Activate Campaign'}
                 </Button>
               </div>
             )}
