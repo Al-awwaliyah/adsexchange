@@ -46,7 +46,7 @@ serve(async (req) => {
         tx_ref: `TXN_${Date.now()}_${user.id}`,
         amount: amount,
         currency: currency || 'NGN',
-        redirect_url: `${req.headers.get('origin')}/dashboard`,
+        redirect_url: `${req.headers.get('origin')}/payment-success`,
         payment_options: 'card,banktransfer,ussd',
         customer: {
           email: email || user.email,
