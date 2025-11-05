@@ -39,23 +39,39 @@ export default function CampaignApproval() {
 
   const fetchPendingCampaigns = async () => {
     try {
-      const { data, error } = await supabase
+      const { data: campaignsData, error: campaignsError } = await supabase
         .from('campaigns')
-        .select(`
-          *,
-          profiles:advertiser_id (
-            full_name
-          )
-        `)
+        .select('*')
         .order('created_at', { ascending: false });
 
-      if (error) throw error;
-      setCampaigns(data || []);
-    } catch (error) {
+      if (campaignsError) {
+        console.error('Campaigns error:', campaignsError);
+        throw campaignsError;
+      }
+
+      // Fetch profiles separately to avoid RLS issues with joins
+      const advertiserIds = campaignsData?.map(c => c.advertiser_id).filter(Boolean) || [];
+      const { data: profilesData, error: profilesError } = await supabase
+        .from('profiles')
+        .select('id, full_name')
+        .in('id', advertiserIds);
+
+      if (profilesError) {
+        console.error('Profiles error:', profilesError);
+      }
+
+      // Merge the data
+      const campaignsWithProfiles = campaignsData?.map(campaign => ({
+        ...campaign,
+        profiles: profilesData?.find(p => p.id === campaign.advertiser_id) || { full_name: 'Unknown' }
+      })) || [];
+
+      setCampaigns(campaignsWithProfiles);
+    } catch (error: any) {
       console.error('Error fetching campaigns:', error);
       toast({
         title: 'Error loading campaigns',
-        description: 'Failed to fetch campaigns for approval',
+        description: error.message || 'Failed to fetch campaigns for approval',
         variant: 'destructive',
       });
     } finally {
