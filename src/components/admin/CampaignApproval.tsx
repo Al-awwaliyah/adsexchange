@@ -82,6 +82,15 @@ export default function CampaignApproval() {
   const handleApprove = async (campaignId: string, advertiserId: string, budget: number) => {
     setProcessing(campaignId);
     try {
+      // Get campaign details including payout
+      const { data: campaign, error: campaignFetchError } = await supabase
+        .from('campaigns')
+        .select('payout')
+        .eq('id', campaignId)
+        .single();
+
+      if (campaignFetchError) throw campaignFetchError;
+
       // Get advertiser's wallet
       const { data: wallet, error: walletFetchError } = await supabase
         .from('wallets')
@@ -131,9 +140,24 @@ export default function CampaignApproval() {
 
       if (error) throw error;
 
+      // Calculate number of tasks to create
+      const numberOfTasks = Math.floor(budget / campaign.payout);
+
+      // Create tasks for the campaign
+      const tasksToCreate = Array.from({ length: numberOfTasks }, () => ({
+        campaign_id: campaignId,
+        status: 'available',
+      }));
+
+      const { error: tasksError } = await supabase
+        .from('tasks')
+        .insert(tasksToCreate);
+
+      if (tasksError) throw tasksError;
+
       toast({
         title: 'Campaign approved',
-        description: 'Budget deducted and campaign is now active',
+        description: `Budget deducted, campaign activated, and ${numberOfTasks} tasks created`,
       });
 
       fetchPendingCampaigns();
