@@ -5,3 +5,6 @@ verify_jwt = true
 
 [functions.flutterwave-verify-payment]
 verify_jwt = true
+
+[functions.flutterwave-webhook]
+verify_jwt = false
