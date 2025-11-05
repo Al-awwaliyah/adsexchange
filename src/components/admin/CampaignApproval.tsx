@@ -79,9 +79,51 @@ export default function CampaignApproval() {
     }
   };
 
-  const handleApprove = async (campaignId: string) => {
+  const handleApprove = async (campaignId: string, advertiserId: string, budget: number) => {
     setProcessing(campaignId);
     try {
+      // Get advertiser's wallet
+      const { data: wallet, error: walletFetchError } = await supabase
+        .from('wallets')
+        .select('balance')
+        .eq('user_id', advertiserId)
+        .single();
+
+      if (walletFetchError) throw walletFetchError;
+
+      // Check if advertiser has sufficient balance
+      if ((wallet.balance || 0) < budget) {
+        toast({
+          title: 'Insufficient balance',
+          description: 'Advertiser does not have enough funds for this campaign',
+          variant: 'destructive',
+        });
+        return;
+      }
+
+      // Deduct campaign budget from wallet
+      const newBalance = (wallet.balance || 0) - budget;
+      const { error: walletUpdateError } = await supabase
+        .from('wallets')
+        .update({ balance: newBalance })
+        .eq('user_id', advertiserId);
+
+      if (walletUpdateError) throw walletUpdateError;
+
+      // Create transaction record
+      const { error: transactionError } = await supabase
+        .from('transactions')
+        .insert({
+          from_user_id: advertiserId,
+          amount: budget,
+          transaction_type: 'campaign_budget',
+          status: 'completed',
+          reference: campaignId,
+        });
+
+      if (transactionError) throw transactionError;
+
+      // Approve campaign
       const { error } = await supabase
         .from('campaigns')
         .update({ approved: true, status: 'active' })
@@ -91,7 +133,7 @@ export default function CampaignApproval() {
 
       toast({
         title: 'Campaign approved',
-        description: 'The campaign is now active and visible to promoters',
+        description: 'Budget deducted and campaign is now active',
       });
 
       fetchPendingCampaigns();
@@ -201,7 +243,7 @@ export default function CampaignApproval() {
             {!campaign.approved && (
               <div className="flex gap-2 pt-4">
                 <Button
-                  onClick={() => handleApprove(campaign.id)}
+                  onClick={() => handleApprove(campaign.id, campaign.advertiser_id, campaign.budget)}
                   disabled={processing === campaign.id}
                   className="flex-1"
                 >
