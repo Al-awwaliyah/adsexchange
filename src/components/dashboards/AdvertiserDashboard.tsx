@@ -23,6 +23,7 @@ const AdvertiserDashboard = () => {
   const [editingCampaign, setEditingCampaign] = useState<any>(null);
   const [selectedCampaignForAnalytics, setSelectedCampaignForAnalytics] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
+  const [activeTab, setActiveTab] = useState('campaigns');
 
   useEffect(() => {
     if (user) {
@@ -154,12 +155,12 @@ const AdvertiserDashboard = () => {
               <div className="text-2xl font-bold">
                 {wallet?.currency_type === 'NGN' ? '₦' : '$'}{wallet?.balance || '0.00'}
               </div>
-              <Button size="sm" className="mt-2">Add Funds</Button>
+              <Button size="sm" className="mt-2" onClick={() => setActiveTab('billing')}>Add Funds</Button>
             </CardContent>
           </Card>
         </div>
 
-        <Tabs defaultValue="campaigns" className="space-y-4">
+        <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-4">
           <TabsList>
             <TabsTrigger value="campaigns">Campaigns</TabsTrigger>
             <TabsTrigger value="review">Task Review</TabsTrigger>
