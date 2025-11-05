@@ -6,8 +6,13 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { ArrowLeft, Download } from 'lucide-react';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { Calendar } from '@/components/ui/calendar';
+import { ArrowLeft, Download, CalendarIcon, Receipt } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import { format } from 'date-fns';
+import { cn } from '@/lib/utils';
+import PaymentReceiptModal from '@/components/payment/PaymentReceiptModal';
 
 type PaymentRecord = {
   id: string;
@@ -27,12 +32,16 @@ export default function PaymentHistory() {
   const [loading, setLoading] = useState(true);
   const [typeFilter, setTypeFilter] = useState<'all' | 'deposit' | 'withdrawal'>('all');
   const [statusFilter, setStatusFilter] = useState<'all' | 'completed' | 'pending' | 'failed'>('all');
+  const [dateFrom, setDateFrom] = useState<Date | undefined>();
+  const [dateTo, setDateTo] = useState<Date | undefined>();
+  const [selectedPayment, setSelectedPayment] = useState<PaymentRecord | null>(null);
+  const [receiptModalOpen, setReceiptModalOpen] = useState(false);
 
   useEffect(() => {
     if (user) {
       fetchPaymentHistory();
     }
-  }, [user, typeFilter, statusFilter]);
+  }, [user, typeFilter, statusFilter, dateFrom, dateTo]);
 
   const fetchPaymentHistory = async () => {
     try {
@@ -50,6 +59,16 @@ export default function PaymentHistory() {
 
         if (statusFilter !== 'all') {
           depositQuery = depositQuery.eq('status', statusFilter);
+        }
+
+        if (dateFrom) {
+          depositQuery = depositQuery.gte('created_at', dateFrom.toISOString());
+        }
+
+        if (dateTo) {
+          const endOfDay = new Date(dateTo);
+          endOfDay.setHours(23, 59, 59, 999);
+          depositQuery = depositQuery.lte('created_at', endOfDay.toISOString());
         }
 
         const { data: deposits, error: depositError } = await depositQuery;
@@ -80,6 +99,16 @@ export default function PaymentHistory() {
 
         if (statusFilter !== 'all') {
           withdrawalQuery = withdrawalQuery.eq('status', statusFilter);
+        }
+
+        if (dateFrom) {
+          withdrawalQuery = withdrawalQuery.gte('created_at', dateFrom.toISOString());
+        }
+
+        if (dateTo) {
+          const endOfDay = new Date(dateTo);
+          endOfDay.setHours(23, 59, 59, 999);
+          withdrawalQuery = withdrawalQuery.lte('created_at', endOfDay.toISOString());
         }
 
         const { data: withdrawals, error: withdrawalError } = await withdrawalQuery;
@@ -122,6 +151,11 @@ export default function PaymentHistory() {
     }
   };
 
+  const handleViewReceipt = (payment: PaymentRecord) => {
+    setSelectedPayment(payment);
+    setReceiptModalOpen(true);
+  };
+
   return (
     <div className="min-h-screen bg-background p-6">
       <div className="max-w-7xl mx-auto space-y-6">
@@ -147,8 +181,8 @@ export default function PaymentHistory() {
             <CardDescription>Filter your payment history</CardDescription>
           </CardHeader>
           <CardContent>
-            <div className="flex gap-4">
-              <div className="flex-1">
+            <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+              <div>
                 <Select value={typeFilter} onValueChange={(value: any) => setTypeFilter(value)}>
                   <SelectTrigger>
                     <SelectValue placeholder="Payment Type" />
@@ -160,7 +194,7 @@ export default function PaymentHistory() {
                   </SelectContent>
                 </Select>
               </div>
-              <div className="flex-1">
+              <div>
                 <Select value={statusFilter} onValueChange={(value: any) => setStatusFilter(value)}>
                   <SelectTrigger>
                     <SelectValue placeholder="Status" />
@@ -173,7 +207,71 @@ export default function PaymentHistory() {
                   </SelectContent>
                 </Select>
               </div>
+              <div>
+                <Popover>
+                  <PopoverTrigger asChild>
+                    <Button
+                      variant="outline"
+                      className={cn(
+                        "w-full justify-start text-left font-normal",
+                        !dateFrom && "text-muted-foreground"
+                      )}
+                    >
+                      <CalendarIcon className="mr-2 h-4 w-4" />
+                      {dateFrom ? format(dateFrom, "PPP") : <span>From date</span>}
+                    </Button>
+                  </PopoverTrigger>
+                  <PopoverContent className="w-auto p-0" align="start">
+                    <Calendar
+                      mode="single"
+                      selected={dateFrom}
+                      onSelect={setDateFrom}
+                      initialFocus
+                      className="pointer-events-auto"
+                    />
+                  </PopoverContent>
+                </Popover>
+              </div>
+              <div>
+                <Popover>
+                  <PopoverTrigger asChild>
+                    <Button
+                      variant="outline"
+                      className={cn(
+                        "w-full justify-start text-left font-normal",
+                        !dateTo && "text-muted-foreground"
+                      )}
+                    >
+                      <CalendarIcon className="mr-2 h-4 w-4" />
+                      {dateTo ? format(dateTo, "PPP") : <span>To date</span>}
+                    </Button>
+                  </PopoverTrigger>
+                  <PopoverContent className="w-auto p-0" align="start">
+                    <Calendar
+                      mode="single"
+                      selected={dateTo}
+                      onSelect={setDateTo}
+                      initialFocus
+                      className="pointer-events-auto"
+                    />
+                  </PopoverContent>
+                </Popover>
+              </div>
             </div>
+            {(dateFrom || dateTo) && (
+              <div className="mt-4">
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => {
+                    setDateFrom(undefined);
+                    setDateTo(undefined);
+                  }}
+                >
+                  Clear date filters
+                </Button>
+              </div>
+            )}
           </CardContent>
         </Card>
 
@@ -196,6 +294,7 @@ export default function PaymentHistory() {
                     <TableHead>Amount</TableHead>
                     <TableHead>Status</TableHead>
                     <TableHead>Reference</TableHead>
+                    <TableHead className="text-right">Actions</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
@@ -226,6 +325,16 @@ export default function PaymentHistory() {
                       <TableCell className="text-sm text-muted-foreground">
                         {payment.reference || payment.payment_method || '-'}
                       </TableCell>
+                      <TableCell className="text-right">
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => handleViewReceipt(payment)}
+                        >
+                          <Receipt className="h-4 w-4 mr-2" />
+                          Receipt
+                        </Button>
+                      </TableCell>
                     </TableRow>
                   ))}
                 </TableBody>
@@ -234,6 +343,12 @@ export default function PaymentHistory() {
           </CardContent>
         </Card>
       </div>
+
+      <PaymentReceiptModal
+        open={receiptModalOpen}
+        onOpenChange={setReceiptModalOpen}
+        payment={selectedPayment}
+      />
     </div>
   );
 }
