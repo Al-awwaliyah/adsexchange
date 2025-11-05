@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/integrations/supabase/client';
+import { useCurrency } from '@/hooks/useCurrency';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -16,6 +17,7 @@ import { useNavigate } from 'react-router-dom';
 const PublisherDashboard = () => {
   const { user, signOut } = useAuth();
   const navigate = useNavigate();
+  const { format } = useCurrency();
   const [wallet, setWallet] = useState<any>(null);
   const [profile, setProfile] = useState<any>(null);
   const [earnings, setEarnings] = useState(0);
@@ -103,7 +105,7 @@ const PublisherDashboard = () => {
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold">
-                {wallet?.currency_type === 'NGN' ? '₦' : '$'}{earnings.toFixed(2)}
+                {format(earnings)}
               </div>
               <p className="text-xs text-muted-foreground">All time</p>
             </CardContent>
@@ -116,7 +118,7 @@ const PublisherDashboard = () => {
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold">
-                {wallet?.currency_type === 'NGN' ? '₦' : '$'}{wallet?.balance || '0.00'}
+                {format(wallet?.balance || 0)}
               </div>
             </CardContent>
           </Card>

@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/hooks/use-toast';
+import { useCurrency } from '@/hooks/useCurrency';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -13,6 +14,7 @@ import { Upload, ExternalLink, Clock, CheckCircle, XCircle } from 'lucide-react'
 
 export default function MyTasks() {
   const { user } = useAuth();
+  const { format } = useCurrency();
   const [tasks, setTasks] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
@@ -23,6 +25,27 @@ export default function MyTasks() {
     if (user) {
       fetchMyTasks();
     }
+
+    // Realtime subscription for tasks
+    const channel = supabase
+      .channel('my-task-changes')
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'tasks',
+          filter: `promoter_id=eq.${user?.id}`,
+        },
+        () => {
+          fetchMyTasks();
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
   }, [user]);
 
   const fetchMyTasks = async () => {
@@ -151,7 +174,7 @@ export default function MyTasks() {
               <div className="flex justify-between items-center">
                 <span className="text-sm text-muted-foreground">Payout:</span>
                 <span className="text-lg font-bold text-green-600">
-                  ${task.campaigns?.payout}
+                  {format(task.campaigns?.payout || 0)}
                 </span>
               </div>
 

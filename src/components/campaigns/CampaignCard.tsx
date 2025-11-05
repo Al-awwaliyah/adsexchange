@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/hooks/use-toast';
+import { useCurrency } from '@/hooks/useCurrency';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -13,6 +14,7 @@ interface CampaignCardProps {
 }
 
 export default function CampaignCard({ campaign, onEdit, onUpdate }: CampaignCardProps) {
+  const { format } = useCurrency();
   const [loading, setLoading] = useState(false);
 
   const handleStatusToggle = async () => {
@@ -73,11 +75,11 @@ export default function CampaignCard({ campaign, onEdit, onUpdate }: CampaignCar
         <div className="grid grid-cols-2 gap-4 mb-4">
           <div>
             <p className="text-sm text-muted-foreground">Budget</p>
-            <p className="text-2xl font-bold">${campaign.budget}</p>
+            <p className="text-2xl font-bold">{format(campaign.budget)}</p>
           </div>
           <div>
             <p className="text-sm text-muted-foreground">Payout per Task</p>
-            <p className="text-2xl font-bold">${campaign.payout}</p>
+            <p className="text-2xl font-bold">{format(campaign.payout)}</p>
           </div>
         </div>
 

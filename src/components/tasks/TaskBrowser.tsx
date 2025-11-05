@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/hooks/use-toast';
+import { useCurrency } from '@/hooks/useCurrency';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -11,6 +12,7 @@ import { DollarSign, Users, MapPin, Calendar } from 'lucide-react';
 
 export default function TaskBrowser() {
   const { user } = useAuth();
+  const { format } = useCurrency();
   const [tasks, setTasks] = useState<any[]>([]);
   const [campaigns, setCampaigns] = useState<any[]>([]);
   const [profile, setProfile] = useState<any>(null);
@@ -23,6 +25,26 @@ export default function TaskBrowser() {
     if (user) {
       fetchProfile();
     }
+
+    // Realtime subscription for tasks
+    const channel = supabase
+      .channel('task-changes')
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'tasks',
+        },
+        () => {
+          fetchAvailableTasks();
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
   }, [user]);
 
   const fetchProfile = async () => {
@@ -200,7 +222,7 @@ export default function TaskBrowser() {
                         <span>Payout:</span>
                       </div>
                       <span className="text-lg font-bold text-green-600">
-                        ${campaign.payout}
+                        {format(campaign.payout)}
                       </span>
                     </div>
 

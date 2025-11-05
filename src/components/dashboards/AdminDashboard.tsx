@@ -6,6 +6,7 @@ import UserVerification from '@/components/admin/UserVerification';
 import PayoutApproval from '@/components/admin/PayoutApproval';
 import PlatformAnalytics from '@/components/admin/PlatformAnalytics';
 import TaskReview from '@/components/tasks/TaskReview';
+import CampaignApproval from '@/components/admin/CampaignApproval';
 import { LogOut } from 'lucide-react';
 
 const AdminDashboard = () => {
@@ -43,6 +44,7 @@ const AdminDashboard = () => {
           <TabsList>
             <TabsTrigger value="verification">Verification</TabsTrigger>
             <TabsTrigger value="users">User Management</TabsTrigger>
+            <TabsTrigger value="campaigns">Campaign Approval</TabsTrigger>
             <TabsTrigger value="tasks">Task Review</TabsTrigger>
             <TabsTrigger value="payouts">Payouts</TabsTrigger>
           </TabsList>
@@ -53,6 +55,14 @@ const AdminDashboard = () => {
 
           <TabsContent value="users">
             <UserManagement />
+          </TabsContent>
+
+          <TabsContent value="campaigns" className="space-y-4">
+            <div>
+              <h2 className="text-2xl font-bold mb-2">Campaign Approval</h2>
+              <p className="text-muted-foreground mb-4">Review and approve advertiser campaigns</p>
+            </div>
+            <CampaignApproval />
           </TabsContent>
 
           <TabsContent value="tasks" className="space-y-4">

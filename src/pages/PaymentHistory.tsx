@@ -12,6 +12,7 @@ import { ArrowLeft, Download, CalendarIcon, Receipt } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { format } from 'date-fns';
 import { cn } from '@/lib/utils';
+import { useCurrency } from '@/hooks/useCurrency';
 import PaymentReceiptModal from '@/components/payment/PaymentReceiptModal';
 
 type PaymentRecord = {
@@ -28,6 +29,7 @@ type PaymentRecord = {
 export default function PaymentHistory() {
   const { user } = useAuth();
   const navigate = useNavigate();
+  const { format: formatCurrency } = useCurrency();
   const [payments, setPayments] = useState<PaymentRecord[]>([]);
   const [loading, setLoading] = useState(true);
   const [typeFilter, setTypeFilter] = useState<'all' | 'deposit' | 'withdrawal'>('all');
@@ -41,6 +43,26 @@ export default function PaymentHistory() {
     if (user) {
       fetchPaymentHistory();
     }
+
+    // Realtime subscription for transactions
+    const channel = supabase
+      .channel('transaction-changes')
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'transactions',
+        },
+        () => {
+          fetchPaymentHistory();
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
   }, [user, typeFilter, statusFilter, dateFrom, dateTo]);
 
   const fetchPaymentHistory = async () => {
@@ -315,7 +337,7 @@ export default function PaymentHistory() {
                         </Badge>
                       </TableCell>
                       <TableCell className={payment.type === 'deposit' ? 'text-green-600' : 'text-red-600'}>
-                        {payment.type === 'deposit' ? '+' : '-'}${payment.amount.toFixed(2)}
+                        {payment.type === 'deposit' ? '+' : '-'}{formatCurrency(payment.amount)}
                       </TableCell>
                       <TableCell>
                         <Badge variant={getStatusColor(payment.status)}>

@@ -17,6 +17,7 @@ export type Database = {
       campaigns: {
         Row: {
           advertiser_id: string
+          approved: boolean
           budget: number
           created_at: string | null
           creative_url: string | null
@@ -30,6 +31,7 @@ export type Database = {
         }
         Insert: {
           advertiser_id: string
+          approved?: boolean
           budget: number
           created_at?: string | null
           creative_url?: string | null
@@ -43,6 +45,7 @@ export type Database = {
         }
         Update: {
           advertiser_id?: string
+          approved?: boolean
           budget?: number
           created_at?: string | null
           creative_url?: string | null
