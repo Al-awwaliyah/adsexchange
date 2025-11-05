@@ -118,6 +118,27 @@ export default function TaskReview() {
 
       if (transactionError) throw transactionError;
 
+      // Send email notification
+      try {
+        const { data: promoterAuth } = await supabase.auth.admin.getUserById(task.promoter_id);
+        if (promoterAuth.user?.email) {
+          await supabase.functions.invoke('send-notification-email', {
+            body: {
+              type: 'task_approved',
+              to: promoterAuth.user.email,
+              data: {
+                promoterName: task.profiles?.full_name || 'User',
+                campaignTitle: task.campaigns?.title,
+                payout: `$${task.campaigns?.payout}`,
+                dashboardUrl: `${window.location.origin}/dashboard`,
+              },
+            },
+          });
+        }
+      } catch (emailError) {
+        console.error('Error sending email:', emailError);
+      }
+
       toast({ title: 'Task approved and payment processed!' });
       fetchSubmittedTasks();
     } catch (error: any) {

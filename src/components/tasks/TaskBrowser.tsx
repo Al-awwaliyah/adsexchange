@@ -68,7 +68,7 @@ export default function TaskBrowser() {
     }
   };
 
-  const handleClaimTask = async (taskId: string) => {
+  const handleClaimTask = async (taskId: string, campaign: any) => {
     if (!user) return;
 
     if (!profile?.verified) {
@@ -91,6 +91,25 @@ export default function TaskBrowser() {
         .eq('id', taskId);
 
       if (error) throw error;
+
+      // Send email notification
+      try {
+        const { data: userData } = await supabase.auth.getUser();
+        await supabase.functions.invoke('send-notification-email', {
+          body: {
+            type: 'task_assigned',
+            to: userData.user?.email,
+            data: {
+              promoterName: profile.full_name || 'User',
+              campaignTitle: campaign.title,
+              payout: `$${campaign.payout}`,
+              taskUrl: `${window.location.origin}/dashboard`,
+            },
+          },
+        });
+      } catch (emailError) {
+        console.error('Error sending email:', emailError);
+      }
 
       toast({ title: 'Task claimed successfully!' });
       fetchAvailableTasks();
@@ -212,7 +231,7 @@ export default function TaskBrowser() {
                       {campaignTasks.slice(0, 1).map((task) => (
                         <Button
                           key={task.id}
-                          onClick={() => handleClaimTask(task.id)}
+                          onClick={() => handleClaimTask(task.id, campaign)}
                           className="w-full"
                           disabled={!profile?.verified}
                         >

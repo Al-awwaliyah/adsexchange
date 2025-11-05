@@ -85,6 +85,30 @@ serve(async (req) => {
 
       if (txError) throw txError;
 
+      // Send email notification
+      try {
+        const { data: profile } = await supabase
+          .from('profiles')
+          .select('full_name')
+          .eq('id', user.id)
+          .single();
+
+        await supabase.functions.invoke('send-notification-email', {
+          body: {
+            type: 'payment_confirmation',
+            to: user.email,
+            data: {
+              userName: profile?.full_name || 'User',
+              amount: `${currency} ${amount}`,
+              transactionType: 'deposit',
+              dashboardUrl: 'https://yourapp.com/dashboard',
+            },
+          },
+        });
+      } catch (emailError) {
+        console.error('Error sending email:', emailError);
+      }
+
       return new Response(
         JSON.stringify({ 
           success: true,
