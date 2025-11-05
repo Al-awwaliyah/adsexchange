@@ -15,40 +15,53 @@ export default function PaymentSuccess() {
 
   useEffect(() => {
     const transactionId = searchParams.get('transaction_id');
-    const txRef = searchParams.get('tx_ref');
     const status = searchParams.get('status');
 
-    if (!transactionId || status !== 'successful') {
+    console.log('Payment params:', { transactionId, status });
+
+    if (!transactionId) {
+      console.error('No transaction ID found');
       setVerifying(false);
       return;
     }
 
+    // Verify payment regardless of status parameter
     verifyPayment(transactionId);
   }, [searchParams]);
 
   const verifyPayment = async (transactionId: string) => {
     try {
+      console.log('Verifying payment with transaction ID:', transactionId);
+      
       const { data, error } = await supabase.functions.invoke('flutterwave-verify-payment', {
         body: { transaction_id: transactionId },
       });
 
-      if (error) throw error;
+      console.log('Verification response:', { data, error });
 
-      if (data.success) {
+      if (error) {
+        console.error('Verification error:', error);
+        throw error;
+      }
+
+      if (data?.success) {
         setVerified(true);
         setTransactionDetails(data);
         toast({
           title: 'Payment Successful',
           description: `Your wallet has been credited with ${data.currency} ${data.amount}`,
         });
+      } else if (data?.error) {
+        throw new Error(data.error);
       } else {
-        throw new Error(data.message || 'Payment verification failed');
+        throw new Error(data?.message || 'Payment verification failed');
       }
     } catch (error: any) {
       console.error('Payment verification error:', error);
+      setVerified(false);
       toast({
         title: 'Verification Failed',
-        description: error.message,
+        description: error.message || 'Unable to verify payment',
         variant: 'destructive',
       });
     } finally {
