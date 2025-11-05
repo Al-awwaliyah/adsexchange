@@ -10,7 +10,6 @@ import MyTasks from '@/components/tasks/MyTasks';
 import WithdrawalForm from '@/components/wallet/WithdrawalForm';
 import TransactionHistory from '@/components/wallet/TransactionHistory';
 import CurrencySettings from '@/components/settings/CurrencySettings';
-import DepositForm from '@/components/wallet/DepositForm';
 import { LogOut, DollarSign, CheckCircle, AlertCircle } from 'lucide-react';
 
 const PublisherDashboard = () => {
@@ -166,10 +165,7 @@ const PublisherDashboard = () => {
           </TabsContent>
 
           <TabsContent value="withdraw" className="space-y-6">
-            <div className="grid gap-6 md:grid-cols-2">
-              <DepositForm />
-              <WithdrawalForm />
-            </div>
+            <WithdrawalForm />
             <TransactionHistory />
           </TabsContent>
 
