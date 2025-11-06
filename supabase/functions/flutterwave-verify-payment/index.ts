@@ -58,6 +58,26 @@ serve(async (req) => {
         throw new Error('Wallet not found');
       }
 
+      // Check if transaction already exists to prevent duplicate deposits
+      const { data: existingTx } = await supabase
+        .from('transactions')
+        .select('id')
+        .eq('reference', data.data.tx_ref)
+        .single();
+
+      if (existingTx) {
+        return new Response(
+          JSON.stringify({ 
+            success: true,
+            message: 'Transaction already processed',
+            amount: amount,
+            currency: currency,
+            new_balance: parseFloat(wallet.balance)
+          }),
+          { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        );
+      }
+
       // Update wallet balance
       const newBalance = parseFloat(wallet.balance) + amount;
       

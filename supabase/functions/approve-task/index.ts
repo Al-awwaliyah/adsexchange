@@ -43,7 +43,7 @@ const handler = async (req: Request): Promise<Response> => {
 
     console.log(`Processing ${action} for task ${taskId} by user ${user.id}`);
 
-    // Get task details
+    // Get task details with campaign and promoter info
     const { data: task, error: taskError } = await supabase
       .from('tasks')
       .select(`
@@ -62,6 +62,10 @@ const handler = async (req: Request): Promise<Response> => {
       throw new Error('Task not found');
     }
 
+    if (!task.promoter_id) {
+      throw new Error('Task has no promoter assigned');
+    }
+
     // Verify user has permission (is advertiser or admin)
     const { data: roles } = await supabase
       .from('user_roles')
@@ -76,7 +80,25 @@ const handler = async (req: Request): Promise<Response> => {
     }
 
     if (action === 'approve') {
-      // Update task status
+      // Verify task is in submitted status
+      if (task.status !== 'submitted') {
+        throw new Error('Task must be in submitted status to approve');
+      }
+
+      // Get campaign payout amount
+      const payout = parseFloat(task.campaigns.payout.toString());
+
+      // Get promoter's wallet
+      const { data: promoterWallet, error: walletFetchError } = await supabase
+        .from('wallets')
+        .select('balance, currency_type')
+        .eq('user_id', task.promoter_id)
+        .single();
+
+      if (walletFetchError) throw walletFetchError;
+      if (!promoterWallet) throw new Error('Promoter wallet not found');
+
+      // Update task status to completed first
       const { error: updateError } = await supabase
         .from('tasks')
         .update({
@@ -87,17 +109,8 @@ const handler = async (req: Request): Promise<Response> => {
 
       if (updateError) throw updateError;
 
-      // Get promoter wallet
-      const { data: wallet, error: walletError } = await supabase
-        .from('wallets')
-        .select('balance')
-        .eq('user_id', task.promoter_id)
-        .single();
-
-      if (walletError) throw walletError;
-
-      // Update wallet balance
-      const newBalance = (wallet.balance || 0) + task.campaigns.payout;
+      // Update promoter's wallet balance
+      const newBalance = parseFloat(promoterWallet.balance.toString()) + payout;
       const { error: walletUpdateError } = await supabase
         .from('wallets')
         .update({ balance: newBalance })
@@ -111,10 +124,14 @@ const handler = async (req: Request): Promise<Response> => {
         .insert({
           from_user_id: task.campaigns.advertiser_id,
           to_user_id: task.promoter_id,
-          amount: task.campaigns.payout,
+          amount: payout,
           transaction_type: 'task_payout',
           status: 'completed',
           reference: taskId,
+          metadata: {
+            campaign_id: task.campaign_id,
+            task_id: taskId,
+          },
         });
 
       if (transactionError) throw transactionError;
@@ -138,7 +155,7 @@ const handler = async (req: Request): Promise<Response> => {
               data: {
                 promoterName: profile?.full_name || 'User',
                 campaignTitle: task.campaigns.title,
-                payout: `$${task.campaigns.payout}`,
+                payout: `${promoterWallet.currency_type === 'NGN' ? '₦' : '$'}${payout.toFixed(2)}`,
                 dashboardUrl: `${new URL(req.url).origin}/dashboard`,
               },
             },
@@ -156,10 +173,16 @@ const handler = async (req: Request): Promise<Response> => {
       );
 
     } else if (action === 'reject') {
+      // Verify task is in submitted status
+      if (task.status !== 'submitted') {
+        throw new Error('Task must be in submitted status to reject');
+      }
+
       if (!rejectionReason || rejectionReason.trim().length === 0) {
         throw new Error('Rejection reason is required');
       }
 
+      // Update task status to rejected and store rejection reason
       const { error: updateError } = await supabase
         .from('tasks')
         .update({

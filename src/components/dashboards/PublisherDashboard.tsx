@@ -6,12 +6,13 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Alert, AlertDescription } from '@/components/ui/alert';
-import TaskBrowser from '@/components/tasks/TaskBrowser';
+import PromoterTaskBrowser from '@/components/tasks/PromoterTaskBrowser';
 import MyTasks from '@/components/tasks/MyTasks';
+import PromoterAnalytics from '@/components/dashboards/PromoterAnalytics';
 import WithdrawalForm from '@/components/wallet/WithdrawalForm';
 import TransactionHistory from '@/components/wallet/TransactionHistory';
 import CurrencySettings from '@/components/settings/CurrencySettings';
-import { LogOut, DollarSign, CheckCircle, AlertCircle, History } from 'lucide-react';
+import { LogOut, Wallet, AlertCircle, History } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 
 const PublisherDashboard = () => {
@@ -20,12 +21,10 @@ const PublisherDashboard = () => {
   const { format } = useCurrency();
   const [wallet, setWallet] = useState<any>(null);
   const [profile, setProfile] = useState<any>(null);
-  const [earnings, setEarnings] = useState(0);
 
   useEffect(() => {
     if (user) {
       fetchWallet();
-      fetchEarnings();
       fetchProfile();
     }
   }, [user]);
@@ -60,24 +59,6 @@ const PublisherDashboard = () => {
     }
   };
 
-  const fetchEarnings = async () => {
-    try {
-      const { data, error } = await supabase
-        .from('transactions')
-        .select('amount')
-        .eq('to_user_id', user?.id)
-        .eq('transaction_type', 'task_payout')
-        .eq('status', 'completed');
-
-      if (error) throw error;
-      
-      const total = data?.reduce((sum, t) => sum + Number(t.amount), 0) || 0;
-      setEarnings(total);
-    } catch (error) {
-      console.error('Error fetching earnings:', error);
-    }
-  };
-
   return (
     <div className="min-h-screen bg-background">
       <header className="border-b">
@@ -97,54 +78,36 @@ const PublisherDashboard = () => {
       </header>
 
       <main className="container mx-auto px-4 py-8">
-        <div className="grid gap-6 md:grid-cols-3 mb-8">
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Total Earnings</CardTitle>
-              <DollarSign className="h-4 w-4 text-muted-foreground" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">
-                {format(earnings)}
-              </div>
-              <p className="text-xs text-muted-foreground">All time</p>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Wallet Balance</CardTitle>
-              <DollarSign className="h-4 w-4 text-muted-foreground" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">
-                {format(wallet?.balance || 0)}
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Completed Tasks</CardTitle>
-              <CheckCircle className="h-4 w-4 text-muted-foreground" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">-</div>
-              <p className="text-xs text-muted-foreground">Tasks completed</p>
-            </CardContent>
-          </Card>
+        <div className="mb-6">
+          <h2 className="text-3xl font-bold">Promoter Dashboard</h2>
+          <p className="text-muted-foreground">Complete tasks and earn rewards</p>
         </div>
 
-        <Tabs defaultValue="tasks" className="space-y-4">
+        <div className="mb-6">
+          <PromoterAnalytics />
+        </div>
+
+        <Card className="mb-6">
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">Wallet Balance</CardTitle>
+            <Wallet className="h-4 w-4 text-muted-foreground" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">{format(wallet?.balance || 0)}</div>
+            <p className="text-xs text-muted-foreground">Available for withdrawal</p>
+          </CardContent>
+        </Card>
+
+        <Tabs defaultValue="browse" className="space-y-4">
           <TabsList>
-            <TabsTrigger value="tasks">Available Tasks</TabsTrigger>
+            <TabsTrigger value="browse">Available Campaigns</TabsTrigger>
             <TabsTrigger value="mytasks">My Tasks</TabsTrigger>
             <TabsTrigger value="withdraw">Withdraw</TabsTrigger>
             <TabsTrigger value="transactions">Transactions</TabsTrigger>
             <TabsTrigger value="settings">Settings</TabsTrigger>
           </TabsList>
 
-          <TabsContent value="tasks" className="space-y-4">
+          <TabsContent value="browse" className="space-y-4">
             {!profile?.verified && (
               <Alert>
                 <AlertCircle className="h-4 w-4" />
@@ -153,18 +116,10 @@ const PublisherDashboard = () => {
                 </AlertDescription>
               </Alert>
             )}
-            <div>
-              <h2 className="text-2xl font-bold mb-2">Available Tasks</h2>
-              <p className="text-muted-foreground mb-4">Browse and claim tasks to start earning</p>
-            </div>
-            <TaskBrowser />
+            <PromoterTaskBrowser />
           </TabsContent>
 
           <TabsContent value="mytasks" className="space-y-4">
-            <div>
-              <h2 className="text-2xl font-bold mb-2">My Tasks</h2>
-              <p className="text-muted-foreground mb-4">Tasks you've claimed or completed</p>
-            </div>
             <MyTasks />
           </TabsContent>
 

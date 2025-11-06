@@ -9,16 +9,18 @@ import { Alert, AlertDescription } from '@/components/ui/alert';
 import CampaignForm from '@/components/campaigns/CampaignForm';
 import CampaignCard from '@/components/campaigns/CampaignCard';
 import CampaignAnalytics from '@/components/campaigns/CampaignAnalytics';
+import AdvertiserAnalytics from '@/components/dashboards/AdvertiserAnalytics';
 import TaskReview from '@/components/tasks/TaskReview';
 import CurrencySettings from '@/components/settings/CurrencySettings';
 import DepositForm from '@/components/wallet/DepositForm';
 import TransactionHistory from '@/components/wallet/TransactionHistory';
-import { LogOut, Plus, BarChart3, Wallet, AlertCircle, History } from 'lucide-react';
+import { LogOut, Plus, Wallet, AlertCircle, History } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 
 const AdvertiserDashboard = () => {
   const { user, signOut } = useAuth();
   const navigate = useNavigate();
+  const { format } = useCurrency();
   const [campaigns, setCampaigns] = useState<any[]>([]);
   const [wallet, setWallet] = useState<any>(null);
   const [profile, setProfile] = useState<any>(null);
@@ -99,12 +101,6 @@ const AdvertiserDashboard = () => {
     setEditingCampaign(null);
   };
 
-  const activeCampaigns = campaigns.filter(c => c.status === 'active').length;
-  const totalSpend = campaigns.reduce((sum, c) => {
-    // Calculate from actual completed tasks - simplified for now
-    return sum + (c.budget || 0);
-  }, 0);
-
   return (
     <div className="min-h-screen bg-background">
       <header className="border-b">
@@ -124,44 +120,26 @@ const AdvertiserDashboard = () => {
       </header>
 
       <main className="container mx-auto px-4 py-8">
-        <div className="grid gap-6 md:grid-cols-3 mb-8">
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Active Campaigns</CardTitle>
-              <BarChart3 className="h-4 w-4 text-muted-foreground" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">{activeCampaigns}</div>
-              <p className="text-xs text-muted-foreground">{campaigns.length} total</p>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Total Budget</CardTitle>
-              <Wallet className="h-4 w-4 text-muted-foreground" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">
-                {wallet?.currency_type === 'NGN' ? '₦' : '$'}{totalSpend.toFixed(2)}
-              </div>
-              <p className="text-xs text-muted-foreground">All campaigns</p>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Wallet Balance</CardTitle>
-              <Wallet className="h-4 w-4 text-muted-foreground" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">
-                {wallet?.currency_type === 'NGN' ? '₦' : '$'}{wallet?.balance || '0.00'}
-              </div>
-              <Button size="sm" className="mt-2" onClick={() => setActiveTab('billing')}>Add Funds</Button>
-            </CardContent>
-          </Card>
+        <div className="mb-6">
+          <h2 className="text-3xl font-bold">Advertiser Dashboard</h2>
+          <p className="text-muted-foreground">Manage your campaigns and reach your audience</p>
         </div>
+
+        <div className="mb-6">
+          <AdvertiserAnalytics />
+        </div>
+
+        <Card className="mb-6">
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">Wallet Balance</CardTitle>
+            <Wallet className="h-4 w-4 text-muted-foreground" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">{format(wallet?.balance || 0)}</div>
+            <p className="text-xs text-muted-foreground">Available funds</p>
+            <Button size="sm" className="mt-2" onClick={() => setActiveTab('billing')}>Add Funds</Button>
+          </CardContent>
+        </Card>
 
         <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-4">
           <TabsList>

@@ -77,6 +77,16 @@ export default function MyTasks() {
       return;
     }
 
+    // Verify task is in correct status
+    if (selectedTask.status !== 'claimed') {
+      toast({
+        title: 'Cannot submit proof',
+        description: 'This task cannot be submitted in its current status',
+        variant: 'destructive',
+      });
+      return;
+    }
+
     setSubmitting(true);
     try {
       // Validate proof URL before submission
@@ -89,11 +99,12 @@ export default function MyTasks() {
           status: 'submitted',
           submitted_at: new Date().toISOString(),
         })
-        .eq('id', selectedTask.id);
+        .eq('id', selectedTask.id)
+        .eq('promoter_id', user?.id); // Extra security check
 
       if (error) throw error;
 
-      toast({ title: 'Proof submitted successfully!' });
+      toast({ title: 'Proof submitted successfully! Awaiting review.' });
       setProofUrl('');
       setSelectedTask(null);
       fetchMyTasks();
@@ -210,7 +221,7 @@ export default function MyTasks() {
                 </div>
               )}
 
-              {task.status === 'in_progress' && (
+              {task.status === 'claimed' && (
                 <Dialog>
                   <DialogTrigger asChild>
                     <Button
