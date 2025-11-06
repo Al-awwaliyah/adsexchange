@@ -107,7 +107,7 @@ export default function TaskBrowser() {
         .from('tasks')
         .update({
           promoter_id: user.id,
-          status: 'in_progress',
+          status: 'claimed',
           claimed_at: new Date().toISOString(),
         })
         .eq('id', taskId);
