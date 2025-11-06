@@ -12,7 +12,8 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
-import { Upload, ExternalLink, Clock, CheckCircle, XCircle } from 'lucide-react';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Upload, ExternalLink, Clock, CheckCircle, XCircle, Link } from 'lucide-react';
 
 export default function MyTasks() {
   const { user } = useAuth();
@@ -22,6 +23,9 @@ export default function MyTasks() {
   const [submitting, setSubmitting] = useState(false);
   const [selectedTask, setSelectedTask] = useState<any>(null);
   const [proofUrl, setProofUrl] = useState('');
+  const [proofFile, setProofFile] = useState<File | null>(null);
+  const [proofType, setProofType] = useState<'url' | 'file'>('url');
+  const [uploading, setUploading] = useState(false);
 
   useEffect(() => {
     if (user) {
@@ -68,12 +72,18 @@ export default function MyTasks() {
   };
 
   const handleSubmitProof = async () => {
-    if (!selectedTask || !proofUrl) {
-      toast({
-        title: 'Missing information',
-        description: 'Please provide proof URL',
-        variant: 'destructive',
-      });
+    if (!selectedTask) {
+      toast({ title: 'No task selected', variant: 'destructive' });
+      return;
+    }
+
+    if (proofType === 'url' && !proofUrl) {
+      toast({ title: 'Please provide a proof URL', variant: 'destructive' });
+      return;
+    }
+
+    if (proofType === 'file' && !proofFile) {
+      toast({ title: 'Please upload a proof screenshot', variant: 'destructive' });
       return;
     }
 
@@ -89,13 +99,37 @@ export default function MyTasks() {
 
     setSubmitting(true);
     try {
-      // Validate proof URL before submission
-      const validatedData = taskProofSchema.parse({ proof_url: proofUrl });
+      let finalProofUrl = proofUrl;
+
+      // If file upload, upload to storage first
+      if (proofType === 'file' && proofFile) {
+        setUploading(true);
+        const fileExt = proofFile.name.split('.').pop();
+        const fileName = `${user?.id}/${selectedTask.id}_${Date.now()}.${fileExt}`;
+
+        const { error: uploadError } = await supabase.storage
+          .from('task-proofs')
+          .upload(fileName, proofFile);
+
+        if (uploadError) throw uploadError;
+
+        // Get public URL
+        const { data: { publicUrl } } = supabase.storage
+          .from('task-proofs')
+          .getPublicUrl(fileName);
+
+        finalProofUrl = publicUrl;
+        setUploading(false);
+      } else if (proofType === 'url') {
+        // Validate proof URL
+        const validatedData = taskProofSchema.parse({ proof_url: proofUrl });
+        finalProofUrl = validatedData.proof_url;
+      }
 
       const { error } = await supabase
         .from('tasks')
         .update({
-          proof_url: validatedData.proof_url,
+          proof_url: finalProofUrl,
           status: 'submitted',
           submitted_at: new Date().toISOString(),
         })
@@ -106,6 +140,8 @@ export default function MyTasks() {
 
       toast({ title: 'Proof submitted successfully! Awaiting review.' });
       setProofUrl('');
+      setProofFile(null);
+      setProofType('url');
       setSelectedTask(null);
       fetchMyTasks();
     } catch (error: any) {
@@ -124,6 +160,7 @@ export default function MyTasks() {
       }
     } finally {
       setSubmitting(false);
+      setUploading(false);
     }
   };
 
@@ -232,34 +269,69 @@ export default function MyTasks() {
                       Submit Proof
                     </Button>
                   </DialogTrigger>
-                  <DialogContent>
+                  <DialogContent className="max-w-md">
                     <DialogHeader>
                       <DialogTitle>Submit Proof of Completion</DialogTitle>
                       <DialogDescription>
-                        Provide a link to your post or upload proof of task completion
+                        Provide a link or upload a screenshot as proof
                       </DialogDescription>
                     </DialogHeader>
-                    <div className="space-y-4 pt-4">
-                      <div className="space-y-2">
-                        <Label htmlFor="proof_url">Proof URL</Label>
-                        <Input
-                          id="proof_url"
-                          placeholder="https://instagram.com/p/..."
-                          value={proofUrl}
-                          onChange={(e) => setProofUrl(e.target.value)}
-                        />
-                        <p className="text-xs text-muted-foreground">
-                          Link to your social media post or screenshot
-                        </p>
-                      </div>
-                      <Button
-                        onClick={handleSubmitProof}
-                        disabled={submitting || !proofUrl}
-                        className="w-full"
-                      >
-                        {submitting ? 'Submitting...' : 'Submit Proof'}
-                      </Button>
-                    </div>
+                    <Tabs value={proofType} onValueChange={(v) => setProofType(v as 'url' | 'file')} className="pt-4">
+                      <TabsList className="grid w-full grid-cols-2">
+                        <TabsTrigger value="url">
+                          <Link className="h-4 w-4 mr-2" />
+                          URL Link
+                        </TabsTrigger>
+                        <TabsTrigger value="file">
+                          <Upload className="h-4 w-4 mr-2" />
+                          Upload File
+                        </TabsTrigger>
+                      </TabsList>
+                      <TabsContent value="url" className="space-y-4 mt-4">
+                        <div className="space-y-2">
+                          <Label htmlFor="proof_url">Proof URL</Label>
+                          <Input
+                            id="proof_url"
+                            placeholder="https://instagram.com/p/..."
+                            value={proofUrl}
+                            onChange={(e) => setProofUrl(e.target.value)}
+                          />
+                          <p className="text-xs text-muted-foreground">
+                            Link to your social media post or screenshot
+                          </p>
+                        </div>
+                      </TabsContent>
+                      <TabsContent value="file" className="space-y-4 mt-4">
+                        <div className="space-y-2">
+                          <Label htmlFor="proof_file">Upload Screenshot</Label>
+                          <div className="border-2 border-dashed rounded-lg p-6 text-center hover:border-primary/50 transition-colors">
+                            <input
+                              id="proof_file"
+                              type="file"
+                              accept="image/*"
+                              onChange={(e) => setProofFile(e.target.files?.[0] || null)}
+                              className="hidden"
+                            />
+                            <label htmlFor="proof_file" className="cursor-pointer">
+                              <Upload className="h-12 w-12 mx-auto mb-2 text-muted-foreground" />
+                              <p className="text-sm font-medium">
+                                {proofFile ? proofFile.name : 'Click to upload screenshot'}
+                              </p>
+                              <p className="text-xs text-muted-foreground mt-1">
+                                PNG, JPG, WEBP or GIF (max 5MB)
+                              </p>
+                            </label>
+                          </div>
+                        </div>
+                      </TabsContent>
+                    </Tabs>
+                    <Button
+                      onClick={handleSubmitProof}
+                      disabled={submitting || uploading || (proofType === 'url' ? !proofUrl : !proofFile)}
+                      className="w-full"
+                    >
+                      {uploading ? 'Uploading...' : submitting ? 'Submitting...' : 'Submit Proof'}
+                    </Button>
                   </DialogContent>
                 </Dialog>
               )}
