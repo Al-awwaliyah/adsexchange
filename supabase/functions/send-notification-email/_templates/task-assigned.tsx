@@ -39,17 +39,7 @@ export const TaskAssignedEmail = ({
         <Link
           href={taskUrl}
           target="_blank"
-          style={{
-            ...link,
-            display: 'inline-block',
-            marginTop: '16px',
-            marginBottom: '16px',
-            padding: '12px 24px',
-            backgroundColor: '#0ea5e9',
-            color: '#ffffff',
-            textDecoration: 'none',
-            borderRadius: '6px',
-          }}
+          style={buttonLink}
         >
           View Task Details
         </Link>
@@ -110,4 +100,18 @@ const footer = {
   lineHeight: '22px',
   marginTop: '12px',
   marginBottom: '24px',
+}
+
+const buttonLink = {
+  display: 'inline-block',
+  marginTop: '16px',
+  marginBottom: '16px',
+  padding: '12px 24px',
+  backgroundColor: '#0ea5e9',
+  color: '#ffffff',
+  textDecoration: 'none',
+  borderRadius: '6px',
+  fontFamily:
+    "-apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue', sans-serif",
+  fontSize: '14px',
 }
