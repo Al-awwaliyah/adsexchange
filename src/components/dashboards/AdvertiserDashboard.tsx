@@ -154,8 +154,17 @@ const AdvertiserDashboard = () => {
             {!profile?.verified && (
               <Alert>
                 <AlertCircle className="h-4 w-4" />
-                <AlertDescription>
-                  Your account needs to be verified by an admin before you can create campaigns.
+                <AlertDescription className="flex items-center justify-between">
+                  <span>Your account needs to be verified by an admin before you can create campaigns.</span>
+                  <Button 
+                    size="sm" 
+                    onClick={() => {
+                      const message = encodeURIComponent("I want to join the AdsExchange Advertiser community to activate my account");
+                      window.open(`https://wa.me/2349051546367?text=${message}`, '_blank');
+                    }}
+                  >
+                    Verify Now
+                  </Button>
                 </AlertDescription>
               </Alert>
             )}

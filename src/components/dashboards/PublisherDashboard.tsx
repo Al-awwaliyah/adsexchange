@@ -111,8 +111,17 @@ const PublisherDashboard = () => {
             {!profile?.verified && (
               <Alert>
                 <AlertCircle className="h-4 w-4" />
-                <AlertDescription>
-                  Your account needs to be verified by an admin before you can claim tasks.
+                <AlertDescription className="flex items-center justify-between">
+                  <span>Your account needs to be verified by an admin before you can claim tasks.</span>
+                  <Button 
+                    size="sm" 
+                    onClick={() => {
+                      const message = encodeURIComponent("I want to join the AdsExchange Promoter community to activate my account");
+                      window.open(`https://wa.me/2349051546367?text=${message}`, '_blank');
+                    }}
+                  >
+                    Verify Now
+                  </Button>
                 </AlertDescription>
               </Alert>
             )}
