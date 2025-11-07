@@ -98,6 +98,22 @@ const handler = async (req: Request): Promise<Response> => {
       if (walletFetchError) throw walletFetchError;
       if (!promoterWallet) throw new Error('Promoter wallet not found');
 
+      // Get advertiser's wallet
+      const { data: advertiserWallet, error: advertiserWalletError } = await supabase
+        .from('wallets')
+        .select('balance, currency_type')
+        .eq('user_id', task.campaigns.advertiser_id)
+        .single();
+
+      if (advertiserWalletError) throw advertiserWalletError;
+      if (!advertiserWallet) throw new Error('Advertiser wallet not found');
+
+      // Check if advertiser has sufficient balance
+      const advertiserBalance = parseFloat(advertiserWallet.balance.toString());
+      if (advertiserBalance < payout) {
+        throw new Error('Insufficient balance in advertiser account');
+      }
+
       // Update task status to completed first
       const { error: updateError } = await supabase
         .from('tasks')
@@ -109,11 +125,20 @@ const handler = async (req: Request): Promise<Response> => {
 
       if (updateError) throw updateError;
 
-      // Update promoter's wallet balance
-      const newBalance = parseFloat(promoterWallet.balance.toString()) + payout;
+      // Deduct from advertiser's wallet
+      const newAdvertiserBalance = advertiserBalance - payout;
+      const { error: advertiserWalletUpdateError } = await supabase
+        .from('wallets')
+        .update({ balance: newAdvertiserBalance })
+        .eq('user_id', task.campaigns.advertiser_id);
+
+      if (advertiserWalletUpdateError) throw advertiserWalletUpdateError;
+
+      // Add to promoter's wallet balance
+      const newPromoterBalance = parseFloat(promoterWallet.balance.toString()) + payout;
       const { error: walletUpdateError } = await supabase
         .from('wallets')
-        .update({ balance: newBalance })
+        .update({ balance: newPromoterBalance })
         .eq('user_id', task.promoter_id);
 
       if (walletUpdateError) throw walletUpdateError;
