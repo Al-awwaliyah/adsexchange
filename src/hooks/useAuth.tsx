@@ -65,7 +65,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   }, []);
 
   const signUp = async (email: string, password: string, fullName: string, role: AppRole, currency: 'USD' | 'NGN' = 'USD') => {
-    const redirectUrl = `${window.location.origin}/auth`;
+    const redirectUrl = `${window.location.origin}/dashboard`;
     
     const { data, error } = await supabase.auth.signUp({
       email,
@@ -74,24 +74,16 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         emailRedirectTo: redirectUrl,
         data: { 
           full_name: fullName,
-          currency_type: currency
+          currency_type: currency,
+          selected_role: role
         }
       }
     });
 
     if (!error && data.user) {
-      const { error: roleError } = await supabase
-        .from('user_roles')
-        .insert({ user_id: data.user.id, role });
+      // Don't assign role here - let user confirm email first
+      // Role will be assigned when they select it on the dashboard after confirmation
       
-      if (roleError) {
-        toast({
-          title: 'Warning',
-          description: 'Account created but role assignment failed. Contact support.',
-          variant: 'destructive'
-        });
-      }
-
       // Update wallet currency
       const { error: walletError } = await supabase
         .from('wallets')
