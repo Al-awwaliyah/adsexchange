@@ -52,7 +52,9 @@ const handler = async (req: Request): Promise<Response> => {
           id,
           title,
           payout,
-          advertiser_id
+          advertiser_id,
+          completed_tasks,
+          spent
         )
       `)
       .eq('id', taskId)
@@ -160,6 +162,20 @@ const handler = async (req: Request): Promise<Response> => {
         });
 
       if (transactionError) throw transactionError;
+
+      // Update campaign statistics
+      const { error: campaignUpdateError } = await supabase
+        .from('campaigns')
+        .update({
+          completed_tasks: (task.campaigns.completed_tasks || 0) + 1,
+          spent: parseFloat((task.campaigns.spent || 0).toString()) + payout,
+        })
+        .eq('id', task.campaign_id);
+
+      if (campaignUpdateError) {
+        console.error('Error updating campaign stats:', campaignUpdateError);
+        // Don't fail the approval if stats update fails
+      }
 
       // Get promoter email and send notification
       const { data: promoterAuth } = await supabase.auth.admin.getUserById(task.promoter_id);

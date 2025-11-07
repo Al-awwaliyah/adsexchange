@@ -19,12 +19,14 @@ export type Database = {
           advertiser_id: string
           approved: boolean
           budget: number
+          completed_tasks: number | null
           created_at: string | null
           creative_url: string | null
           criteria: Json | null
           description: string | null
           id: string
           payout: number
+          spent: number | null
           status: string | null
           title: string
           updated_at: string | null
@@ -33,12 +35,14 @@ export type Database = {
           advertiser_id: string
           approved?: boolean
           budget: number
+          completed_tasks?: number | null
           created_at?: string | null
           creative_url?: string | null
           criteria?: Json | null
           description?: string | null
           id?: string
           payout: number
+          spent?: number | null
           status?: string | null
           title: string
           updated_at?: string | null
@@ -47,12 +51,14 @@ export type Database = {
           advertiser_id?: string
           approved?: boolean
           budget?: number
+          completed_tasks?: number | null
           created_at?: string | null
           creative_url?: string | null
           criteria?: Json | null
           description?: string | null
           id?: string
           payout?: number
+          spent?: number | null
           status?: string | null
           title?: string
           updated_at?: string | null
