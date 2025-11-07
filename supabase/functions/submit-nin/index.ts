@@ -6,28 +6,12 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
 
-// Simple encryption function (in production, use proper encryption library)
-function encryptNIN(nin: string): string {
-  const key = Deno.env.get('NIN_ENCRYPTION_KEY') || 'default-key';
-  return btoa(`${key}:${nin}`);
-}
-
-// Mock NIN verification (replace with actual provider like Dojah or VerifyMe)
-async function verifyWithProvider(data: any) {
-  console.log('Calling NIN verification provider with data:', { ...data, nin: '[REDACTED]' });
-  
-  // Mock response - in production, call actual API
-  // For demo purposes, we'll accept any 11-digit NIN
-  const isValid = /^\d{11}$/.test(data.nin);
-  
-  return {
-    success: isValid,
-    message: isValid ? 'NIN verification initiated' : 'Invalid NIN format',
-    provider_response: {
-      status: isValid ? 'pending' : 'failed',
-      timestamp: new Date().toISOString(),
-    }
-  };
+// Basic NIN validation
+function validateNIN(nin: string): { valid: boolean; message: string } {
+  if (!/^\d{11}$/.test(nin)) {
+    return { valid: false, message: 'NIN must be exactly 11 digits' };
+  }
+  return { valid: true, message: 'NIN format valid' };
 }
 
 serve(async (req) => {
@@ -59,18 +43,13 @@ serve(async (req) => {
       throw new Error('Missing required fields');
     }
 
-    // Encrypt NIN
-    const encryptedNIN = encryptNIN(nin);
+    // Validate NIN format
+    const validation = validateNIN(nin);
+    if (!validation.valid) {
+      throw new Error(validation.message);
+    }
 
-    // Call verification provider
-    const verificationResult = await verifyWithProvider({
-      nin,
-      firstName,
-      lastName,
-      dateOfBirth,
-    });
-
-    // Create verification attempt record
+    // Create verification attempt record for admin review
     const { data: attempt, error: attemptError } = await supabase
       .from('verification_attempts')
       .insert({
@@ -81,7 +60,6 @@ serve(async (req) => {
         date_of_birth: dateOfBirth,
         selfie_url: selfieUrl,
         status: 'pending',
-        provider_response: verificationResult.provider_response,
       })
       .select()
       .single();
@@ -95,7 +73,6 @@ serve(async (req) => {
     const { error: profileError } = await supabase
       .from('profiles')
       .update({
-        nin_encrypted: encryptedNIN,
         nin_verification_status: 'pending',
       })
       .eq('id', user.id);
@@ -119,7 +96,7 @@ serve(async (req) => {
     return new Response(
       JSON.stringify({
         success: true,
-        message: verificationResult.message,
+        message: 'NIN verification submitted successfully. Awaiting admin review.',
         attemptId: attempt.id,
       }),
       { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
