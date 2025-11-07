@@ -229,6 +229,7 @@ const handler = async (req: Request): Promise<Response> => {
         .update({
           status: 'rejected',
           reviewed_at: new Date().toISOString(),
+          rejection_reason: rejectionReason,
         })
         .eq('id', taskId);
 

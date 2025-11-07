@@ -130,6 +130,7 @@ export type Database = {
           id: string
           promoter_id: string | null
           proof_url: string | null
+          rejection_reason: string | null
           reviewed_at: string | null
           status: string | null
           submitted_at: string | null
@@ -141,6 +142,7 @@ export type Database = {
           id?: string
           promoter_id?: string | null
           proof_url?: string | null
+          rejection_reason?: string | null
           reviewed_at?: string | null
           status?: string | null
           submitted_at?: string | null
@@ -152,11 +154,19 @@ export type Database = {
           id?: string
           promoter_id?: string | null
           proof_url?: string | null
+          rejection_reason?: string | null
           reviewed_at?: string | null
           status?: string | null
           submitted_at?: string | null
         }
         Relationships: [
+          {
+            foreignKeyName: "fk_tasks_promoter"
+            columns: ["promoter_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "tasks_campaign_id_fkey"
             columns: ["campaign_id"]
