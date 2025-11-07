@@ -7,6 +7,7 @@ import PayoutApproval from '@/components/admin/PayoutApproval';
 import PlatformAnalytics from '@/components/admin/PlatformAnalytics';
 import TaskReview from '@/components/tasks/TaskReview';
 import CampaignApproval from '@/components/admin/CampaignApproval';
+import { NINVerificationReview } from '@/components/admin/NINVerificationReview';
 import { LogOut } from 'lucide-react';
 
 const AdminDashboard = () => {
@@ -43,6 +44,7 @@ const AdminDashboard = () => {
         <Tabs defaultValue="verification" className="space-y-4">
           <TabsList>
             <TabsTrigger value="verification">Verification</TabsTrigger>
+            <TabsTrigger value="nin">NIN Review</TabsTrigger>
             <TabsTrigger value="users">User Management</TabsTrigger>
             <TabsTrigger value="campaigns">Campaign Approval</TabsTrigger>
             <TabsTrigger value="tasks">Task Review</TabsTrigger>
@@ -51,6 +53,10 @@ const AdminDashboard = () => {
 
           <TabsContent value="verification">
             <UserVerification />
+          </TabsContent>
+
+          <TabsContent value="nin">
+            <NINVerificationReview />
           </TabsContent>
 
           <TabsContent value="users">

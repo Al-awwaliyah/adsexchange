@@ -14,7 +14,7 @@ import TaskReview from '@/components/tasks/TaskReview';
 import CurrencySettings from '@/components/settings/CurrencySettings';
 import DepositForm from '@/components/wallet/DepositForm';
 import TransactionHistory from '@/components/wallet/TransactionHistory';
-import { LogOut, Plus, Wallet, AlertCircle, History } from 'lucide-react';
+import { LogOut, Plus, Wallet, AlertCircle, History, Settings } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 
 const AdvertiserDashboard = () => {
@@ -111,6 +111,10 @@ const AdvertiserDashboard = () => {
           </div>
           <div className="flex items-center gap-4">
             <span className="text-sm text-muted-foreground">{user?.email}</span>
+            <Button variant="outline" size="sm" onClick={() => navigate('/settings')}>
+              <Settings className="h-4 w-4 mr-2" />
+              Settings
+            </Button>
             <Button variant="outline" size="sm" onClick={signOut}>
               <LogOut className="h-4 w-4 mr-2" />
               Sign Out

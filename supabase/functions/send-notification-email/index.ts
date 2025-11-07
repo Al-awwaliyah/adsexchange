@@ -5,6 +5,9 @@ import { renderAsync } from "https://esm.sh/@react-email/components@0.0.22";
 import { TaskAssignedEmail } from './_templates/task-assigned.tsx';
 import { TaskApprovedEmail } from './_templates/task-approved.tsx';
 import { PaymentConfirmationEmail } from './_templates/payment-confirmation.tsx';
+import { NINSubmittedEmail } from './_templates/nin-submitted.tsx';
+import { NINApprovedEmail } from './_templates/nin-approved.tsx';
+import { NINRejectedEmail } from './_templates/nin-rejected.tsx';
 
 const resend = new Resend(Deno.env.get("RESEND_API_KEY") as string);
 
@@ -15,9 +18,9 @@ const corsHeaders = {
 };
 
 interface EmailRequest {
-  type: 'task_assigned' | 'task_approved' | 'payment_confirmation';
+  type: 'task_assigned' | 'task_approved' | 'payment_confirmation' | 'nin_submitted' | 'nin_approved' | 'nin_rejected';
   to: string;
-  data: {
+  data?: {
     userName?: string;
     promoterName?: string;
     campaignTitle?: string;
@@ -26,6 +29,9 @@ interface EmailRequest {
     transactionType?: string;
     taskUrl?: string;
     dashboardUrl?: string;
+    firstName?: string;
+    lastName?: string;
+    reason?: string;
   };
 }
 
@@ -46,37 +52,63 @@ const handler = async (req: Request): Promise<Response> => {
       case 'task_assigned':
         html = await renderAsync(
           React.createElement(TaskAssignedEmail, {
-            promoterName: data.promoterName || 'User',
-            campaignTitle: data.campaignTitle || 'Campaign',
-            payout: data.payout || '0',
-            taskUrl: data.taskUrl || 'https://yourapp.com/dashboard',
+            promoterName: data?.promoterName || 'User',
+            campaignTitle: data?.campaignTitle || 'Campaign',
+            payout: data?.payout || '0',
+            taskUrl: data?.taskUrl || 'https://yourapp.com/dashboard',
           })
         );
-        subject = `New Task Assigned: ${data.campaignTitle}`;
+        subject = `New Task Assigned: ${data?.campaignTitle || 'Campaign'}`;
         break;
 
       case 'task_approved':
         html = await renderAsync(
           React.createElement(TaskApprovedEmail, {
-            promoterName: data.promoterName || 'User',
-            campaignTitle: data.campaignTitle || 'Campaign',
-            payout: data.payout || '0',
-            dashboardUrl: data.dashboardUrl || 'https://yourapp.com/dashboard',
+            promoterName: data?.promoterName || 'User',
+            campaignTitle: data?.campaignTitle || 'Campaign',
+            payout: data?.payout || '0',
+            dashboardUrl: data?.dashboardUrl || 'https://yourapp.com/dashboard',
           })
         );
-        subject = `Task Approved: ${data.campaignTitle}`;
+        subject = `Task Approved: ${data?.campaignTitle || 'Campaign'}`;
         break;
 
       case 'payment_confirmation':
         html = await renderAsync(
           React.createElement(PaymentConfirmationEmail, {
-            userName: data.userName || 'User',
-            amount: data.amount || '0',
-            transactionType: data.transactionType || 'transaction',
-            dashboardUrl: data.dashboardUrl || 'https://yourapp.com/dashboard',
+            userName: data?.userName || 'User',
+            amount: data?.amount || '0',
+            transactionType: data?.transactionType || 'transaction',
+            dashboardUrl: data?.dashboardUrl || 'https://yourapp.com/dashboard',
           })
         );
-        subject = `Payment Confirmation - ${data.amount}`;
+        subject = `Payment Confirmation - ${data?.amount}`;
+        break;
+
+      case 'nin_submitted':
+        html = await renderAsync(
+          React.createElement(NINSubmittedEmail, {
+            firstName: data?.firstName || 'User',
+            lastName: data?.lastName || '',
+          })
+        );
+        subject = 'NIN Verification Submitted - AdsExchange';
+        break;
+
+      case 'nin_approved':
+        html = await renderAsync(
+          React.createElement(NINApprovedEmail, {})
+        );
+        subject = 'NIN Verification Approved - AdsExchange';
+        break;
+
+      case 'nin_rejected':
+        html = await renderAsync(
+          React.createElement(NINRejectedEmail, {
+            reason: data?.reason || 'Please review your submission',
+          })
+        );
+        subject = 'NIN Verification Rejected - AdsExchange';
         break;
 
       default:

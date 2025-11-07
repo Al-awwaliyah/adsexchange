@@ -71,6 +71,10 @@ export type Database = {
           created_at: string | null
           full_name: string | null
           id: string
+          nin_encrypted: string | null
+          nin_verification_status: string | null
+          nin_verified: boolean | null
+          nin_verified_at: string | null
           updated_at: string | null
           verified: boolean | null
         }
@@ -79,6 +83,10 @@ export type Database = {
           created_at?: string | null
           full_name?: string | null
           id: string
+          nin_encrypted?: string | null
+          nin_verification_status?: string | null
+          nin_verified?: boolean | null
+          nin_verified_at?: string | null
           updated_at?: string | null
           verified?: boolean | null
         }
@@ -87,6 +95,10 @@ export type Database = {
           created_at?: string | null
           full_name?: string | null
           id?: string
+          nin_encrypted?: string | null
+          nin_verification_status?: string | null
+          nin_verified?: boolean | null
+          nin_verified_at?: string | null
           updated_at?: string | null
           verified?: boolean | null
         }
@@ -229,6 +241,54 @@ export type Database = {
           created_at?: string | null
           id?: string
           role?: Database["public"]["Enums"]["app_role"]
+          user_id?: string
+        }
+        Relationships: []
+      }
+      verification_attempts: {
+        Row: {
+          created_at: string | null
+          date_of_birth: string
+          first_name: string
+          id: string
+          last_name: string
+          nin: string
+          provider_response: Json | null
+          rejection_reason: string | null
+          reviewed_at: string | null
+          reviewed_by: string | null
+          selfie_url: string | null
+          status: string | null
+          user_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          date_of_birth: string
+          first_name: string
+          id?: string
+          last_name: string
+          nin: string
+          provider_response?: Json | null
+          rejection_reason?: string | null
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          selfie_url?: string | null
+          status?: string | null
+          user_id: string
+        }
+        Update: {
+          created_at?: string | null
+          date_of_birth?: string
+          first_name?: string
+          id?: string
+          last_name?: string
+          nin?: string
+          provider_response?: Json | null
+          rejection_reason?: string | null
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          selfie_url?: string | null
+          status?: string | null
           user_id?: string
         }
         Relationships: []
