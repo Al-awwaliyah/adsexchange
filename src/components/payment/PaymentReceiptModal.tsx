@@ -3,6 +3,7 @@ import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
 import { Download, Printer } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
+import { useCurrency } from '@/hooks/useCurrency';
 
 type PaymentRecord = {
   id: string;
@@ -22,6 +23,8 @@ interface PaymentReceiptModalProps {
 }
 
 export default function PaymentReceiptModal({ open, onOpenChange, payment }: PaymentReceiptModalProps) {
+  const { format: formatCurrency } = useCurrency();
+  
   if (!payment) return null;
 
   const handlePrint = () => {
@@ -37,7 +40,7 @@ PAYMENT RECEIPT
 Receipt ID: ${payment.id}
 Date: ${new Date(payment.created_at).toLocaleString()}
 Type: ${payment.type.toUpperCase()}
-Amount: $${payment.amount.toFixed(2)}
+Amount: ${formatCurrency(payment.amount)}
 Status: ${payment.status.toUpperCase()}
 ${payment.reference ? `Reference: ${payment.reference}` : ''}
 ${payment.payment_method ? `Payment Method: ${payment.payment_method}` : ''}
@@ -108,7 +111,7 @@ Thank you for your business!
             <div className="flex justify-between items-center">
               <span className="text-muted-foreground">Amount</span>
               <span className={`text-xl font-bold ${payment.type === 'deposit' ? 'text-green-600' : 'text-red-600'}`}>
-                {payment.type === 'deposit' ? '+' : '-'}${payment.amount.toFixed(2)}
+                {payment.type === 'deposit' ? '+' : '-'}{formatCurrency(payment.amount)}
               </span>
             </div>
 

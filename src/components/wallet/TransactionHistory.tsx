@@ -4,9 +4,11 @@ import { supabase } from '@/integrations/supabase/client';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { ArrowUpRight, ArrowDownLeft } from 'lucide-react';
+import { useCurrency } from '@/hooks/useCurrency';
 
 export default function TransactionHistory() {
   const { user } = useAuth();
+  const { format: formatCurrency } = useCurrency();
   const [transactions, setTransactions] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -106,7 +108,7 @@ export default function TransactionHistory() {
                 </div>
                 <div className="text-right">
                   <p className={`font-bold ${isIncoming ? 'text-green-600' : 'text-red-600'}`}>
-                    {isIncoming ? '+' : '-'}${transaction.amount}
+                    {isIncoming ? '+' : '-'}{formatCurrency(transaction.amount)}
                   </p>
                   <Badge variant={getStatusColor(transaction.status)} className="mt-1">
                     {transaction.status}
