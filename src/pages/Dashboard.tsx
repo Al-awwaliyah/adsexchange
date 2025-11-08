@@ -87,6 +87,25 @@ const Dashboard = () => {
     }
   }, [user, loading, navigate]);
 
+  // Check if user came from email link confirmation
+  useEffect(() => {
+    const handleEmailConfirmation = async () => {
+      const hashParams = new URLSearchParams(window.location.hash.substring(1));
+      const accessToken = hashParams.get('access_token');
+      const type = hashParams.get('type');
+      
+      if (accessToken && type === 'signup') {
+        // User confirmed email, they'll be redirected here
+        toast({
+          title: 'Email Confirmed!',
+          description: 'Please select your role to continue.',
+        });
+      }
+    };
+    
+    handleEmailConfirmation();
+  }, []);
+
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center">

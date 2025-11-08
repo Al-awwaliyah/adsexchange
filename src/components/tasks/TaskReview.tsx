@@ -172,15 +172,32 @@ export default function TaskReview() {
               {task.proof_url && (
                 <div className="p-3 bg-muted rounded-lg">
                   <p className="text-sm font-medium mb-2">Proof of Completion:</p>
-                  <a
-                    href={task.proof_url}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="flex items-center gap-2 text-sm text-primary hover:underline"
-                  >
-                    <ExternalLink className="h-4 w-4" />
-                    {task.proof_url}
-                  </a>
+                  {task.proof_url.match(/\.(jpg|jpeg|png|gif|webp)$/i) ? (
+                    <Dialog>
+                      <DialogTrigger asChild>
+                        <Button variant="outline" size="sm">
+                          <ExternalLink className="h-4 w-4 mr-2" />
+                          View Proof Image
+                        </Button>
+                      </DialogTrigger>
+                      <DialogContent className="max-w-4xl">
+                        <DialogHeader>
+                          <DialogTitle>Submitted Proof</DialogTitle>
+                        </DialogHeader>
+                        <img src={task.proof_url} alt="Task proof" className="w-full rounded-lg" />
+                      </DialogContent>
+                    </Dialog>
+                  ) : (
+                    <a
+                      href={task.proof_url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="flex items-center gap-2 text-sm text-primary hover:underline"
+                    >
+                      <ExternalLink className="h-4 w-4" />
+                      {task.proof_url}
+                    </a>
+                  )}
                 </div>
               )}
 
