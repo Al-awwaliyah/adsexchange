@@ -143,11 +143,14 @@ export default function TaskReview() {
         <Card key={task.id}>
           <CardHeader>
             <div className="flex items-start justify-between">
-              <div>
+              <div className="flex-1">
                 <CardTitle>{task.campaigns?.title}</CardTitle>
                 <CardDescription className="mt-1.5">
                   Promoter: {task.profiles?.full_name || 'Unknown'}
                 </CardDescription>
+                {task.campaigns?.description && (
+                  <p className="text-sm mt-2">{task.campaigns.description}</p>
+                )}
               </div>
               <Badge>Pending Review</Badge>
             </div>
@@ -166,6 +169,16 @@ export default function TaskReview() {
                   <span className="ml-2">
                     {new Date(task.submitted_at).toLocaleDateString()}
                   </span>
+                </div>
+                <div>
+                  <span className="text-muted-foreground">Claimed:</span>
+                  <span className="ml-2">
+                    {task.claimed_at ? new Date(task.claimed_at).toLocaleDateString() : 'N/A'}
+                  </span>
+                </div>
+                <div>
+                  <span className="text-muted-foreground">Task ID:</span>
+                  <span className="ml-2 text-xs">{task.id.slice(0, 8)}</span>
                 </div>
               </div>
 

@@ -4,9 +4,11 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import { Users, UserCheck, DollarSign } from 'lucide-react';
+import { toast } from '@/hooks/use-toast';
 
 export default function UserManagement() {
   const [users, setUsers] = useState<any[]>([]);
+  const [userEmails, setUserEmails] = useState<Map<string, string>>(new Map());
   const [stats, setStats] = useState({
     total: 0,
     advertisers: 0,
@@ -42,6 +44,22 @@ export default function UserManagement() {
 
       if (walletsError) throw walletsError;
 
+      // Fetch user emails via edge function
+      try {
+        const { data: emailData, error: emailError } = await supabase.functions.invoke('get-user-emails');
+        if (!emailError && emailData?.users) {
+          const emailMap = new Map<string, string>(emailData.users.map((u: any) => [u.id, u.email]));
+          setUserEmails(emailMap);
+        }
+      } catch (emailError) {
+        console.error('Error fetching user emails:', emailError);
+        toast({
+          title: 'Warning',
+          description: 'Could not load user emails',
+          variant: 'destructive'
+        });
+      }
+
       // Combine the data
       const combinedUsers = profiles?.map(profile => ({
         ...profile,
@@ -65,9 +83,11 @@ export default function UserManagement() {
     }
   };
 
-  const filteredUsers = users.filter(user =>
-    user.full_name?.toLowerCase().includes(searchTerm.toLowerCase())
-  );
+  const filteredUsers = users.filter(user => {
+    const email = userEmails.get(user.id) || '';
+    return user.full_name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+           email.toLowerCase().includes(searchTerm.toLowerCase());
+  });
 
   if (loading) {
     return (
@@ -134,12 +154,18 @@ export default function UserManagement() {
               >
                 <div className="flex-1">
                   <p className="font-medium">{user.full_name || 'No name'}</p>
+                  <p className="text-sm text-muted-foreground">{userEmails.get(user.id) || 'No email'}</p>
                   <div className="flex gap-2 mt-1">
                     {user.user_roles?.map((role: any, idx: number) => (
                       <Badge key={idx} variant="outline" className="capitalize">
                         {role.role}
                       </Badge>
                     ))}
+                    {user.referral_code && (
+                      <Badge variant="secondary">
+                        Code: {user.referral_code}
+                      </Badge>
+                    )}
                   </div>
                 </div>
                 <div className="text-right">

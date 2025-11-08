@@ -22,7 +22,8 @@ const Auth = () => {
     password: '',
     fullName: '',
     role: 'advertiser' as 'advertiser' | 'promoter' | 'admin',
-    currency: 'USD' as 'USD' | 'NGN'
+    currency: 'USD' as 'USD' | 'NGN',
+    referralCode: ''
   });
 
   const [signInData, setSignInData] = useState({
@@ -54,7 +55,8 @@ const Auth = () => {
         validatedData.password,
         validatedData.fullName!,
         validatedData.role!,
-        validatedData.currency!
+        validatedData.currency!,
+        signUpData.referralCode || undefined
       );
 
       if (error) {
@@ -253,6 +255,20 @@ const Auth = () => {
                       <SelectItem value="NGN">₦ Nigerian Naira (NGN)</SelectItem>
                     </SelectContent>
                   </Select>
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="referralCode">Referral Code (Optional)</Label>
+                  <Input
+                    id="referralCode"
+                    type="text"
+                    value={signUpData.referralCode}
+                    onChange={(e) => setSignUpData({ ...signUpData, referralCode: e.target.value.toUpperCase() })}
+                    placeholder="Enter referral code"
+                    maxLength={8}
+                  />
+                  <p className="text-xs text-muted-foreground">
+                    Have a referral code? Enter it here to connect with your referrer
+                  </p>
                 </div>
                 <Button type="submit" className="w-full" disabled={loading}>
                   {loading ? 'Creating account...' : 'Sign Up'}

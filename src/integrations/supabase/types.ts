@@ -75,6 +75,8 @@ export type Database = {
           nin_verification_status: string | null
           nin_verified: boolean | null
           nin_verified_at: string | null
+          referral_code: string | null
+          referred_by: string | null
           updated_at: string | null
           verified: boolean | null
         }
@@ -87,6 +89,8 @@ export type Database = {
           nin_verification_status?: string | null
           nin_verified?: boolean | null
           nin_verified_at?: string | null
+          referral_code?: string | null
+          referred_by?: string | null
           updated_at?: string | null
           verified?: boolean | null
         }
@@ -99,10 +103,20 @@ export type Database = {
           nin_verification_status?: string | null
           nin_verified?: boolean | null
           nin_verified_at?: string | null
+          referral_code?: string | null
+          referred_by?: string | null
           updated_at?: string | null
           verified?: boolean | null
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "profiles_referred_by_fkey"
+            columns: ["referred_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       social_accounts: {
         Row: {
@@ -361,6 +375,7 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      generate_referral_code: { Args: { user_id: string }; Returns: string }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]

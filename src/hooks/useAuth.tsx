@@ -10,7 +10,7 @@ interface AuthContextType {
   session: Session | null;
   roles: AppRole[];
   loading: boolean;
-  signUp: (email: string, password: string, fullName: string, role: AppRole, currency?: 'USD' | 'NGN') => Promise<{ error: any }>;
+  signUp: (email: string, password: string, fullName: string, role: AppRole, currency?: 'USD' | 'NGN', referralCode?: string) => Promise<{ error: any }>;
   signIn: (email: string, password: string) => Promise<{ error: any }>;
   signOut: () => Promise<void>;
   hasRole: (role: AppRole) => boolean;
@@ -64,8 +64,21 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     return () => subscription.unsubscribe();
   }, []);
 
-  const signUp = async (email: string, password: string, fullName: string, role: AppRole, currency: 'USD' | 'NGN' = 'USD') => {
+  const signUp = async (email: string, password: string, fullName: string, role: AppRole, currency: 'USD' | 'NGN' = 'USD', referralCode?: string) => {
     const redirectUrl = `${window.location.origin}/dashboard`;
+    
+    // If referral code provided, verify it exists
+    if (referralCode) {
+      const { data: referrer } = await supabase
+        .from('profiles')
+        .select('id')
+        .eq('referral_code', referralCode.toUpperCase())
+        .single();
+      
+      if (!referrer) {
+        return { error: { message: 'Invalid referral code' } };
+      }
+    }
     
     const { data, error } = await supabase.auth.signUp({
       email,
@@ -75,15 +88,13 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         data: { 
           full_name: fullName,
           currency_type: currency,
-          selected_role: role
+          selected_role: role,
+          referral_code: referralCode?.toUpperCase() || null
         }
       }
     });
 
     if (!error && data.user) {
-      // Don't assign role here - let user confirm email first
-      // Role will be assigned when they select it on the dashboard after confirmation
-      
       // Update wallet currency
       const { error: walletError } = await supabase
         .from('wallets')
@@ -92,6 +103,22 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
       if (walletError) {
         console.error('Error updating wallet currency:', walletError);
+      }
+
+      // Set referred_by if referral code was provided
+      if (referralCode) {
+        const { data: referrer } = await supabase
+          .from('profiles')
+          .select('id')
+          .eq('referral_code', referralCode.toUpperCase())
+          .single();
+        
+        if (referrer) {
+          await supabase
+            .from('profiles')
+            .update({ referred_by: referrer.id })
+            .eq('id', data.user.id);
+        }
       }
     }
 

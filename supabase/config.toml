@@ -11,3 +11,24 @@ verify_jwt = false
 
 [functions.send-notification-email]
 verify_jwt = true
+
+[functions.get-user-emails]
+verify_jwt = true
+
+[functions.approve-task]
+verify_jwt = true
+
+[functions.approve-withdrawal]
+verify_jwt = true
+
+[functions.nin-approve]
+verify_jwt = true
+
+[functions.nin-reject]
+verify_jwt = true
+
+[functions.nin-status]
+verify_jwt = true
+
+[functions.submit-nin]
+verify_jwt = true

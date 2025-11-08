@@ -19,6 +19,7 @@ interface CampaignFormProps {
 export default function CampaignForm({ campaign, onSuccess, onCancel }: CampaignFormProps) {
   const { user } = useAuth();
   const [loading, setLoading] = useState(false);
+  const [uploading, setUploading] = useState(false);
   const [formData, setFormData] = useState({
     title: campaign?.title || '',
     description: campaign?.description || '',
@@ -31,6 +32,41 @@ export default function CampaignForm({ campaign, onSuccess, onCancel }: Campaign
     start_date: campaign?.criteria?.start_date || '',
     end_date: campaign?.criteria?.end_date || '',
   });
+
+  const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (!e.target.files || e.target.files.length === 0 || !user) return;
+
+    const file = e.target.files[0];
+    const fileExt = file.name.split('.').pop();
+    const fileName = `${user.id}/${Date.now()}.${fileExt}`;
+
+    setUploading(true);
+    try {
+      const { error: uploadError, data } = await supabase.storage
+        .from('campaign-ads')
+        .upload(fileName, file, {
+          cacheControl: '3600',
+          upsert: false
+        });
+
+      if (uploadError) throw uploadError;
+
+      const { data: { publicUrl } } = supabase.storage
+        .from('campaign-ads')
+        .getPublicUrl(fileName);
+
+      setFormData({ ...formData, creative_url: publicUrl });
+      toast({ title: 'File uploaded successfully' });
+    } catch (error: any) {
+      toast({
+        title: 'Upload failed',
+        description: error.message,
+        variant: 'destructive',
+      });
+    } finally {
+      setUploading(false);
+    }
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -172,12 +208,34 @@ export default function CampaignForm({ campaign, onSuccess, onCancel }: Campaign
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="creative_url">Creative URL</Label>
+            <Label htmlFor="creative_file">Upload Ad Creative (Video/Image)</Label>
+            <Input
+              id="creative_file"
+              type="file"
+              accept="video/*,image/*"
+              onChange={handleFileUpload}
+              disabled={uploading}
+            />
+            {uploading && <p className="text-sm text-muted-foreground">Uploading...</p>}
+            {formData.creative_url && (
+              <div className="mt-2">
+                <p className="text-sm text-muted-foreground">Current file:</p>
+                {formData.creative_url.match(/\.(mp4|webm|mov)$/i) ? (
+                  <video src={formData.creative_url} controls className="mt-2 max-h-40 rounded-md" />
+                ) : (
+                  <img src={formData.creative_url} alt="Ad creative" className="mt-2 max-h-40 rounded-md" />
+                )}
+              </div>
+            )}
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="creative_url">Or Enter Creative URL</Label>
             <Input
               id="creative_url"
               value={formData.creative_url}
               onChange={(e) => setFormData({ ...formData, creative_url: e.target.value })}
-              placeholder="https://example.com/ad-image.jpg"
+              placeholder="https://example.com/ad-video.mp4"
             />
           </div>
 

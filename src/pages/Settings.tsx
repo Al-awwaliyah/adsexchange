@@ -7,6 +7,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { ProfileSettings } from '@/components/settings/ProfileSettings';
 import { NINVerification } from '@/components/settings/NINVerification';
 import CurrencySettings from '@/components/settings/CurrencySettings';
+import ReferralCode from '@/components/settings/ReferralCode';
 
 export default function Settings() {
   const { user, loading } = useAuth();
@@ -31,10 +32,11 @@ export default function Settings() {
         </div>
 
         <Tabs defaultValue="profile" className="w-full">
-          <TabsList className="grid w-full grid-cols-3">
+          <TabsList className="grid w-full grid-cols-4">
             <TabsTrigger value="profile">Profile</TabsTrigger>
             <TabsTrigger value="verification">NIN Verification</TabsTrigger>
             <TabsTrigger value="currency">Currency</TabsTrigger>
+            <TabsTrigger value="referral">Referrals</TabsTrigger>
           </TabsList>
 
           <TabsContent value="profile" className="mt-6">
@@ -47,6 +49,10 @@ export default function Settings() {
 
           <TabsContent value="currency" className="mt-6">
             <CurrencySettings />
+          </TabsContent>
+
+          <TabsContent value="referral" className="mt-6">
+            <ReferralCode />
           </TabsContent>
         </Tabs>
       </div>
