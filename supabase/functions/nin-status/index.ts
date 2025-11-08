@@ -14,7 +14,10 @@ serve(async (req) => {
   try {
     const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
     const supabaseAnonKey = Deno.env.get('SUPABASE_ANON_KEY')!;
-    const supabase = createClient(supabaseUrl, supabaseAnonKey);
+    const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
+    
+    // Create client with anon key for authentication
+    const supabaseAuth = createClient(supabaseUrl, supabaseAnonKey);
 
     const authHeader = req.headers.get('Authorization');
     if (!authHeader) {
@@ -22,21 +25,28 @@ serve(async (req) => {
     }
 
     const token = authHeader.replace('Bearer ', '');
-    const { data: { user }, error: authError } = await supabase.auth.getUser(token);
+    const { data: { user }, error: authError } = await supabaseAuth.auth.getUser(token);
 
     if (authError || !user) {
       throw new Error('Unauthorized');
     }
+
+    // Create service role client for database operations (bypasses RLS after auth check)
+    const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
     // Get profile verification status
     const { data: profile, error: profileError } = await supabase
       .from('profiles')
       .select('nin_verified, nin_verification_status, nin_verified_at')
       .eq('id', user.id)
-      .single();
+      .maybeSingle();
 
     if (profileError) {
       throw profileError;
+    }
+
+    if (!profile) {
+      throw new Error('Profile not found');
     }
 
     // Get latest verification attempt
