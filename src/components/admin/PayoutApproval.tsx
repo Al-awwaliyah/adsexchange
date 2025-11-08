@@ -49,49 +49,19 @@ export default function PayoutApproval() {
   const handleApprove = async (withdrawal: any) => {
     setProcessing(true);
     try {
-      // Update withdrawal status
-      const { error: withdrawalError } = await supabase
-        .from('withdrawals')
-        .update({
-          status: 'completed',
-          processed_at: new Date().toISOString(),
-        })
-        .eq('id', withdrawal.id);
+      const { data, error } = await supabase.functions.invoke('approve-withdrawal', {
+        body: { withdrawalId: withdrawal.id },
+        headers: {
+          Authorization: `Bearer ${(await supabase.auth.getSession()).data.session?.access_token}`,
+        },
+      });
 
-      if (withdrawalError) throw withdrawalError;
+      if (error) throw error;
 
-      // Deduct from wallet
-      const { data: wallet, error: walletFetchError } = await supabase
-        .from('wallets')
-        .select('balance')
-        .eq('user_id', withdrawal.user_id)
-        .single();
-
-      if (walletFetchError) throw walletFetchError;
-
-      const newBalance = (wallet.balance || 0) - withdrawal.amount;
-
-      const { error: walletUpdateError } = await supabase
-        .from('wallets')
-        .update({ balance: newBalance })
-        .eq('user_id', withdrawal.user_id);
-
-      if (walletUpdateError) throw walletUpdateError;
-
-      // Create transaction record
-      const { error: transactionError } = await supabase
-        .from('transactions')
-        .insert({
-          from_user_id: withdrawal.user_id,
-          amount: withdrawal.amount,
-          transaction_type: 'withdrawal',
-          status: 'completed',
-          reference: withdrawal.id,
-        });
-
-      if (transactionError) throw transactionError;
-
-      toast({ title: 'Withdrawal approved and processed!' });
+      toast({ 
+        title: 'Success',
+        description: 'Withdrawal approved and processed!' 
+      });
       fetchWithdrawals();
     } catch (error: any) {
       toast({
