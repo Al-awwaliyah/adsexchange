@@ -14,29 +14,33 @@ interface NINSubmittedEmailProps {
   lastName: string;
 }
 
-export const NINSubmittedEmail = ({ firstName, lastName }: NINSubmittedEmailProps) => (
-  <Html>
-    <Head />
-    <Preview>NIN Verification Submitted - AdsExchange</Preview>
-    <Body style={main}>
-      <Container style={container}>
-        <Heading style={h1}>NIN Verification Submitted</Heading>
-        <Text style={text}>
-          Hello {firstName} {lastName},
-        </Text>
-        <Text style={text}>
-          Your NIN verification has been successfully submitted and is now pending review by our admin team.
-        </Text>
-        <Text style={text}>
-          You will receive another email once your verification has been reviewed.
-        </Text>
-        <Text style={text}>
-          Thank you for using AdsExchange!
-        </Text>
-      </Container>
-    </Body>
-  </Html>
-);
+export const NINSubmittedEmail = ({ firstName, lastName }: NINSubmittedEmailProps) => {
+  const fullName = `${firstName || ''} ${lastName || ''}`.trim();
+  
+  return (
+    <Html>
+      <Head />
+      <Preview>NIN Verification Submitted - AdsExchange</Preview>
+      <Body style={main}>
+        <Container style={container}>
+          <Heading style={h1}>NIN Verification Submitted</Heading>
+          <Text style={text}>
+            Hello {fullName || 'User'},
+          </Text>
+          <Text style={text}>
+            Your NIN verification has been successfully submitted and is now pending review by our admin team.
+          </Text>
+          <Text style={text}>
+            You will receive another email once your verification has been reviewed.
+          </Text>
+          <Text style={text}>
+            Thank you for using AdsExchange!
+          </Text>
+        </Container>
+      </Body>
+    </Html>
+  );
+};
 
 const main = {
   backgroundColor: "#f6f9fc",
