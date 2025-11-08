@@ -276,7 +276,7 @@ const AdvertiserDashboard = () => {
                 <CardHeader>
                   <CardTitle>Wallet Balance</CardTitle>
                   <CardDescription>
-                    Current balance: {wallet?.currency_type === 'NGN' ? '₦' : '$'}{wallet?.balance || '0.00'}
+                    Current balance: {format(wallet?.balance || 0)}
                   </CardDescription>
                 </CardHeader>
               </Card>

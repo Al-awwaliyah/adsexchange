@@ -7,9 +7,11 @@ import { Button } from '@/components/ui/button';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Label } from '@/components/ui/label';
 import { DollarSign } from 'lucide-react';
+import { useCurrency } from '@/hooks/useCurrency';
 
 export default function CurrencySettings() {
   const { user } = useAuth();
+  const { format } = useCurrency();
   const [wallet, setWallet] = useState<any>(null);
   const [selectedCurrency, setSelectedCurrency] = useState<'USD' | 'NGN'>('USD');
   const [loading, setLoading] = useState(true);
@@ -93,7 +95,7 @@ export default function CurrencySettings() {
         <div className="p-4 bg-muted rounded-lg">
           <p className="text-sm text-muted-foreground mb-2">Current Balance</p>
           <p className="text-2xl font-bold">
-            {wallet?.currency_type === 'NGN' ? '₦' : '$'}{wallet?.balance || '0.00'}
+            {format(wallet?.balance || 0)}
           </p>
         </div>
 

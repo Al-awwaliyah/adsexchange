@@ -9,9 +9,11 @@ import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { DollarSign } from 'lucide-react';
 import { withdrawalSchema } from '@/lib/validation';
+import { useCurrency } from '@/hooks/useCurrency';
 
 export default function WithdrawalForm() {
   const { user } = useAuth();
+  const { format, symbol, currency: displayCurrency } = useCurrency();
   const [wallet, setWallet] = useState<any>(null);
   const [loading, setLoading] = useState(false);
   const [ninVerified, setNinVerified] = useState(false);
@@ -204,7 +206,7 @@ export default function WithdrawalForm() {
         <CardTitle>Request Withdrawal</CardTitle>
         <CardDescription>
           Available balance: <span className="font-bold text-green-600">
-            {wallet?.currency_type === 'NGN' ? '₦' : '$'}{wallet?.balance || '0.00'}
+            {format(wallet?.balance || 0)}
           </span>
         </CardDescription>
       </CardHeader>
@@ -222,7 +224,7 @@ export default function WithdrawalForm() {
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="space-y-2">
             <Label htmlFor="amount">
-              Amount ({wallet?.currency_type === 'NGN' ? '₦ Naira' : '$ USD'})
+              Amount ({symbol} {displayCurrency})
             </Label>
             <div className="relative">
               <DollarSign className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
