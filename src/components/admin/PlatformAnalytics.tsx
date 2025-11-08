@@ -2,8 +2,10 @@ import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { TrendingUp, DollarSign, Users, CheckCircle } from 'lucide-react';
+import { useCurrency } from '@/hooks/useCurrency';
 
 export default function PlatformAnalytics() {
+  const { format } = useCurrency();
   const [analytics, setAnalytics] = useState({
     totalCampaigns: 0,
     activeCampaigns: 0,
@@ -89,14 +91,14 @@ export default function PlatformAnalytics() {
     },
     {
       title: 'Platform Revenue',
-      value: `$${analytics.totalRevenue.toFixed(2)}`,
+      value: format(analytics.totalRevenue),
       subtitle: '10% commission',
       icon: DollarSign,
       color: 'text-purple-600',
     },
     {
       title: 'Total Payouts',
-      value: `$${analytics.totalPayouts.toFixed(2)}`,
+      value: format(analytics.totalPayouts),
       subtitle: 'To promoters',
       icon: Users,
       color: 'text-orange-600',

@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { CheckCircle, Clock, XCircle, DollarSign } from 'lucide-react';
+import { useCurrency } from '@/hooks/useCurrency';
 
 interface CampaignAnalyticsProps {
   campaignId: string;
@@ -16,6 +17,7 @@ interface Analytics {
 }
 
 export default function CampaignAnalytics({ campaignId }: CampaignAnalyticsProps) {
+  const { format } = useCurrency();
   const [analytics, setAnalytics] = useState<Analytics>({
     total_tasks: 0,
     completed_tasks: 0,
@@ -94,7 +96,7 @@ export default function CampaignAnalytics({ campaignId }: CampaignAnalyticsProps
     },
     {
       title: 'Total Spent',
-      value: `$${analytics.total_spent.toFixed(2)}`,
+      value: format(analytics.total_spent),
       icon: DollarSign,
       color: 'text-blue-600',
     },
