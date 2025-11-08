@@ -14,6 +14,7 @@ export default function WithdrawalForm() {
   const { user } = useAuth();
   const [wallet, setWallet] = useState<any>(null);
   const [loading, setLoading] = useState(false);
+  const [ninVerified, setNinVerified] = useState(false);
   const [formData, setFormData] = useState({
     amount: '',
     payment_method: '',
@@ -26,8 +27,25 @@ export default function WithdrawalForm() {
   useEffect(() => {
     if (user) {
       fetchWallet();
+      checkNinVerification();
     }
   }, [user]);
+
+  const checkNinVerification = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('profiles')
+        .select('nin_verified')
+        .eq('id', user?.id)
+        .single();
+
+      if (error) throw error;
+      setNinVerified(data?.nin_verified || false);
+    } catch (error) {
+      console.error('Error checking NIN verification:', error);
+      setNinVerified(false);
+    }
+  };
 
   const fetchWallet = async () => {
     try {
@@ -86,6 +104,16 @@ export default function WithdrawalForm() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!user || !wallet) return;
+
+    // Check NIN verification
+    if (!ninVerified) {
+      toast({
+        title: 'NIN Verification Required',
+        description: 'You must verify your NIN before making a withdrawal. Please complete verification in Settings.',
+        variant: 'destructive',
+      });
+      return;
+    }
 
     const amount = parseFloat(formData.amount);
     
@@ -181,6 +209,16 @@ export default function WithdrawalForm() {
         </CardDescription>
       </CardHeader>
       <CardContent>
+        {!ninVerified && (
+          <div className="mb-4 p-4 bg-destructive/10 border border-destructive/20 rounded-lg">
+            <p className="text-sm text-destructive font-medium">
+              ⚠️ NIN Verification Required
+            </p>
+            <p className="text-xs text-muted-foreground mt-1">
+              You must verify your NIN in Settings before you can request withdrawals.
+            </p>
+          </div>
+        )}
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="space-y-2">
             <Label htmlFor="amount">
@@ -301,7 +339,7 @@ export default function WithdrawalForm() {
             </div>
           )}
 
-          <Button type="submit" disabled={loading || !formData.payment_method} className="w-full">
+          <Button type="submit" disabled={loading || !formData.payment_method || !ninVerified} className="w-full">
             {loading ? 'Submitting...' : 'Submit Withdrawal Request'}
           </Button>
         </form>
