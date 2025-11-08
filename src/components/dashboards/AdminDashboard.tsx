@@ -14,11 +14,28 @@ const AdminDashboard = () => {
   const { user, signOut } = useAuth();
 
   return (
-    <div className="p-8">
-      <div className="mb-8">
-        <h2 className="text-3xl font-bold mb-2">Platform Overview</h2>
-        <p className="text-muted-foreground">Monitor and manage the AdExchange platform</p>
-      </div>
+    <div className="min-h-screen bg-background">
+      <header className="border-b">
+        <div className="container mx-auto px-4 py-4 flex items-center justify-between">
+          <div>
+            <h1 className="text-2xl font-bold">AdExchange</h1>
+            <p className="text-sm text-muted-foreground">Admin Dashboard</p>
+          </div>
+          <div className="flex items-center gap-4">
+            <span className="text-sm text-muted-foreground">{user?.email}</span>
+            <Button variant="outline" size="sm" onClick={signOut}>
+              <LogOut className="h-4 w-4 mr-2" />
+              Sign Out
+            </Button>
+          </div>
+        </div>
+      </header>
+
+      <main className="container mx-auto px-4 py-8">
+        <div className="mb-8">
+          <h2 className="text-3xl font-bold mb-2">Platform Overview</h2>
+          <p className="text-muted-foreground">Monitor and manage the AdExchange platform</p>
+        </div>
 
         <div className="mb-8">
           <PlatformAnalytics />
@@ -66,6 +83,7 @@ const AdminDashboard = () => {
             <PayoutApproval />
           </TabsContent>
         </Tabs>
+      </main>
     </div>
   );
 };

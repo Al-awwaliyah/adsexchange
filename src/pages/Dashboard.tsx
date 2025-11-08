@@ -4,7 +4,6 @@ import { useAuth } from '@/hooks/useAuth';
 import AdvertiserDashboard from '@/components/dashboards/AdvertiserDashboard';
 import PublisherDashboard from '@/components/dashboards/PublisherDashboard';
 import AdminDashboard from '@/components/dashboards/AdminDashboard';
-import AppLayout from '@/components/layout/AppLayout';
 import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -121,27 +120,15 @@ const Dashboard = () => {
   if (!user) return null;
 
   if (roles.includes('admin')) {
-    return (
-      <AppLayout>
-        <AdminDashboard />
-      </AppLayout>
-    );
+    return <AdminDashboard />;
   }
 
   if (roles.includes('advertiser')) {
-    return (
-      <AppLayout>
-        <AdvertiserDashboard />
-      </AppLayout>
-    );
+    return <AdvertiserDashboard />;
   }
 
   if (roles.includes('promoter')) {
-    return (
-      <AppLayout>
-        <PublisherDashboard />
-      </AppLayout>
-    );
+    return <PublisherDashboard />;
   }
 
   return (

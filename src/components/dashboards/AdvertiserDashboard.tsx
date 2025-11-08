@@ -102,11 +102,32 @@ const AdvertiserDashboard = () => {
   };
 
   return (
-    <div className="p-8">
-      <div className="mb-6">
-        <h2 className="text-3xl font-bold">Advertiser Dashboard</h2>
-        <p className="text-muted-foreground">Manage your campaigns and reach your audience</p>
-      </div>
+    <div className="min-h-screen bg-background">
+      <header className="border-b">
+        <div className="container mx-auto px-4 py-4 flex items-center justify-between">
+          <div>
+            <h1 className="text-2xl font-bold">AdExchange</h1>
+            <p className="text-sm text-muted-foreground">Advertiser Dashboard</p>
+          </div>
+          <div className="flex items-center gap-4">
+            <span className="text-sm text-muted-foreground">{user?.email}</span>
+            <Button variant="outline" size="sm" onClick={() => navigate('/settings')}>
+              <Settings className="h-4 w-4 mr-2" />
+              Settings
+            </Button>
+            <Button variant="outline" size="sm" onClick={signOut}>
+              <LogOut className="h-4 w-4 mr-2" />
+              Sign Out
+            </Button>
+          </div>
+        </div>
+      </header>
+
+      <main className="container mx-auto px-4 py-8">
+        <div className="mb-6">
+          <h2 className="text-3xl font-bold">Advertiser Dashboard</h2>
+          <p className="text-muted-foreground">Manage your campaigns and reach your audience</p>
+        </div>
 
         <div className="mb-6">
           <AdvertiserAnalytics />
@@ -274,6 +295,7 @@ const AdvertiserDashboard = () => {
             <CurrencySettings />
           </TabsContent>
         </Tabs>
+      </main>
     </div>
   );
 };
