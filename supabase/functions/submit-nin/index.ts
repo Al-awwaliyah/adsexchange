@@ -39,8 +39,18 @@ serve(async (req) => {
       throw new Error('Unauthorized');
     }
 
-    // Create service role client for database operations (bypasses RLS after auth check)
-    const supabase = createClient(supabaseUrl, supabaseServiceKey);
+    // Create service role client for database operations (bypasses RLS)
+    const supabase = createClient(supabaseUrl, supabaseServiceKey, {
+      auth: {
+        persistSession: false,
+        autoRefreshToken: false,
+      },
+      global: {
+        headers: {
+          Authorization: `Bearer ${supabaseServiceKey}`
+        }
+      }
+    });
 
     const { nin, firstName, lastName, dateOfBirth, selfieUrl } = await req.json();
 
