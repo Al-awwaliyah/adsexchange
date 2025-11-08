@@ -8,12 +8,12 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Calendar } from '@/components/ui/calendar';
-import { ArrowLeft, Download, CalendarIcon, Receipt } from 'lucide-react';
-import { useNavigate } from 'react-router-dom';
+import { Download, CalendarIcon, Receipt } from 'lucide-react';
 import { format } from 'date-fns';
 import { cn } from '@/lib/utils';
 import { useCurrency } from '@/hooks/useCurrency';
 import PaymentReceiptModal from '@/components/payment/PaymentReceiptModal';
+import AppLayout from '@/components/layout/AppLayout';
 
 type PaymentRecord = {
   id: string;
@@ -28,7 +28,6 @@ type PaymentRecord = {
 
 export default function PaymentHistory() {
   const { user } = useAuth();
-  const navigate = useNavigate();
   const { format: formatCurrency } = useCurrency();
   const [payments, setPayments] = useState<PaymentRecord[]>([]);
   const [loading, setLoading] = useState(true);
@@ -179,23 +178,19 @@ export default function PaymentHistory() {
   };
 
   return (
-    <div className="min-h-screen bg-background p-6">
-      <div className="max-w-7xl mx-auto space-y-6">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-4">
-            <Button variant="ghost" size="icon" onClick={() => navigate('/dashboard')}>
-              <ArrowLeft className="h-4 w-4" />
-            </Button>
+    <AppLayout>
+      <div className="p-8">
+        <div className="max-w-7xl mx-auto space-y-6">
+          <div className="flex items-center justify-between">
             <div>
               <h1 className="text-3xl font-bold">Payment History</h1>
               <p className="text-muted-foreground">View all your deposits and withdrawals</p>
             </div>
+            <Button variant="outline" size="sm">
+              <Download className="h-4 w-4 mr-2" />
+              Export
+            </Button>
           </div>
-          <Button variant="outline" size="sm">
-            <Download className="h-4 w-4 mr-2" />
-            Export
-          </Button>
-        </div>
 
         <Card>
           <CardHeader>
@@ -364,6 +359,7 @@ export default function PaymentHistory() {
             )}
           </CardContent>
         </Card>
+        </div>
       </div>
 
       <PaymentReceiptModal
@@ -371,6 +367,6 @@ export default function PaymentHistory() {
         onOpenChange={setReceiptModalOpen}
         payment={selectedPayment}
       />
-    </div>
+    </AppLayout>
   );
 }

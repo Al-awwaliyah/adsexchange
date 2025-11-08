@@ -60,36 +60,15 @@ const PublisherDashboard = () => {
   };
 
   return (
-    <div className="min-h-screen bg-background">
-      <header className="border-b">
-        <div className="container mx-auto px-4 py-4 flex items-center justify-between">
-          <div>
-            <h1 className="text-2xl font-bold">AdExchange</h1>
-            <p className="text-sm text-muted-foreground">Promoter Dashboard</p>
-          </div>
-          <div className="flex items-center gap-4">
-            <span className="text-sm text-muted-foreground">{user?.email}</span>
-            <Button variant="outline" size="sm" onClick={() => navigate('/settings')}>
-              <Settings className="h-4 w-4 mr-2" />
-              Settings
-            </Button>
-            <Button variant="outline" size="sm" onClick={signOut}>
-              <LogOut className="h-4 w-4 mr-2" />
-              Sign Out
-            </Button>
-          </div>
-        </div>
-      </header>
+    <div className="p-8">
+      <div className="mb-6">
+        <h2 className="text-3xl font-bold">Promoter Dashboard</h2>
+        <p className="text-muted-foreground">Complete tasks and earn rewards</p>
+      </div>
 
-      <main className="container mx-auto px-4 py-8">
-        <div className="mb-6">
-          <h2 className="text-3xl font-bold">Promoter Dashboard</h2>
-          <p className="text-muted-foreground">Complete tasks and earn rewards</p>
-        </div>
-
-        <div className="mb-6">
-          <PromoterAnalytics />
-        </div>
+      <div className="mb-6">
+        <PromoterAnalytics />
+      </div>
 
         <Card className="mb-6">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
@@ -163,7 +142,6 @@ const PublisherDashboard = () => {
             <CurrencySettings />
           </TabsContent>
         </Tabs>
-      </main>
     </div>
   );
 };
