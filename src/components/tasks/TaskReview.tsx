@@ -183,34 +183,40 @@ export default function TaskReview() {
               </div>
 
               {task.proof_url && (
-                <div className="p-3 bg-muted rounded-lg">
-                  <p className="text-sm font-medium mb-2">Proof of Completion:</p>
-                  {task.proof_url.match(/\.(jpg|jpeg|png|gif|webp)$/i) ? (
-                    <Dialog>
-                      <DialogTrigger asChild>
-                        <Button variant="outline" size="sm">
-                          <ExternalLink className="h-4 w-4 mr-2" />
-                          View Proof Image
-                        </Button>
-                      </DialogTrigger>
-                      <DialogContent className="max-w-4xl">
-                        <DialogHeader>
-                          <DialogTitle>Submitted Proof</DialogTitle>
-                        </DialogHeader>
-                        <img src={task.proof_url} alt="Task proof" className="w-full rounded-lg" />
-                      </DialogContent>
-                    </Dialog>
-                  ) : (
+                <div className="space-y-2">
+                  <p className="text-sm font-medium">Proof of Completion:</p>
+                  <div className="border rounded-lg overflow-hidden bg-muted">
+                    {task.proof_url.match(/\.(jpg|jpeg|png|gif|webp)$/i) ? (
+                      <img
+                        src={task.proof_url}
+                        alt="Task proof"
+                        className="w-full h-auto max-h-[500px] object-contain"
+                        onError={(e) => {
+                          console.error('Image failed to load:', task.proof_url);
+                          e.currentTarget.style.display = 'none';
+                          e.currentTarget.nextElementSibling?.classList.remove('hidden');
+                        }}
+                      />
+                    ) : (
+                      <a
+                        href={task.proof_url}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="flex items-center gap-2 p-4 text-primary hover:underline"
+                      >
+                        <ExternalLink className="h-4 w-4" />
+                        View Proof
+                      </a>
+                    )}
                     <a
                       href={task.proof_url}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="flex items-center gap-2 text-sm text-primary hover:underline"
+                      className="hidden p-2 text-sm text-center text-primary hover:underline block"
                     >
-                      <ExternalLink className="h-4 w-4" />
-                      {task.proof_url}
+                      Click to view proof
                     </a>
-                  )}
+                  </div>
                 </div>
               )}
 

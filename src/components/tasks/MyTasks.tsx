@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/hooks/use-toast';
@@ -10,14 +11,14 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Textarea } from '@/components/ui/textarea';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Upload, ExternalLink, Clock, CheckCircle, XCircle, Link } from 'lucide-react';
+import { Upload, Clock, CheckCircle, XCircle, Link, Calendar } from 'lucide-react';
 
 export default function MyTasks() {
   const { user } = useAuth();
   const { format } = useCurrency();
+  const navigate = useNavigate();
   const [tasks, setTasks] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
@@ -211,53 +212,52 @@ export default function MyTasks() {
   }
 
   return (
-    <div className="grid gap-4 md:grid-cols-2">
+    <div className="grid gap-4">
       {tasks.map((task) => (
-        <Card key={task.id}>
+        <Card key={task.id} className="hover:shadow-md transition-shadow">
           <CardHeader>
-            <div className="flex items-start justify-between">
-              <div>
-                <CardTitle>{task.campaigns?.title}</CardTitle>
-                <CardDescription className="mt-1.5">
+            <div className="flex items-start justify-between gap-4">
+              <div className="flex-1">
+                <CardTitle className="text-xl mb-2">{task.campaigns?.title}</CardTitle>
+                <CardDescription className="text-base">
                   {task.campaigns?.description}
                 </CardDescription>
               </div>
-              <Badge variant={getStatusColor(task.status)}>
-                <div className="flex items-center gap-1">
-                  {getStatusIcon(task.status)}
-                  {task.status}
-                </div>
+              <Badge variant="secondary" className="shrink-0">
+                {task.status === 'claimed' ? 'joined' : task.status}
               </Badge>
             </div>
           </CardHeader>
           <CardContent>
-            <div className="space-y-3">
-              <div className="flex justify-between items-center">
+            <div className="space-y-4">
+              {/* Task metadata in single line */}
+              <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                <span className="capitalize">{task.campaigns?.criteria?.platform || 'Affiliate'}</span>
+                <span>•</span>
+                <span className="flex items-center gap-1">
+                  <Calendar className="h-3 w-3" />
+                  Due {task.campaigns?.criteria?.deadline ? new Date(task.campaigns.criteria.deadline).toLocaleDateString() : 'N/A'}
+                </span>
+              </div>
+
+              {/* Payout display */}
+              <div className="flex items-center gap-2">
                 <span className="text-sm text-muted-foreground">Payout:</span>
                 <span className="text-lg font-bold text-green-600">
                   {format(task.campaigns?.payout || 0)}
                 </span>
               </div>
 
-              <div className="flex justify-between items-center text-sm">
-                <span className="text-muted-foreground">Claimed:</span>
-                <span>{new Date(task.claimed_at).toLocaleDateString()}</span>
-              </div>
+              {/* View Details Button */}
+              <Button
+                variant="outline"
+                className="w-full"
+                onClick={() => navigate(`/task/${task.id}`)}
+              >
+                View Details
+              </Button>
 
-              {task.proof_url && (
-                <div className="pt-2 border-t">
-                  <a
-                    href={task.proof_url}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="flex items-center gap-2 text-sm text-primary hover:underline"
-                  >
-                    <ExternalLink className="h-4 w-4" />
-                    View submitted proof
-                  </a>
-                </div>
-              )}
-
+              {/* Submit Proof for claimed tasks */}
               {task.status === 'claimed' && (
                 <Dialog>
                   <DialogTrigger asChild>
