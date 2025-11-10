@@ -67,12 +67,15 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const signUp = async (email: string, password: string, fullName: string, role: AppRole, currency: 'USD' | 'NGN' = 'USD', referralCode?: string) => {
     const redirectUrl = `${window.location.origin}/dashboard`;
     
+    // Clean and validate referral code if provided
+    const cleanReferralCode = referralCode?.trim().toUpperCase();
+    
     // If referral code provided, verify it exists
-    if (referralCode) {
+    if (cleanReferralCode) {
       const { data: referrer } = await supabase
         .from('profiles')
         .select('id')
-        .eq('referral_code', referralCode.toUpperCase())
+        .eq('referral_code', cleanReferralCode)
         .maybeSingle();
       
       if (!referrer) {
@@ -89,7 +92,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
           full_name: fullName,
           currency_type: currency,
           selected_role: role,
-          referral_code: referralCode?.toUpperCase() || null
+          referral_code: cleanReferralCode || null
         }
       }
     });
@@ -106,11 +109,11 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       }
 
       // Set referred_by if referral code was provided
-      if (referralCode) {
+      if (cleanReferralCode) {
         const { data: referrer } = await supabase
           .from('profiles')
           .select('id')
-          .eq('referral_code', referralCode.toUpperCase())
+          .eq('referral_code', cleanReferralCode)
           .maybeSingle();
         
         if (referrer) {

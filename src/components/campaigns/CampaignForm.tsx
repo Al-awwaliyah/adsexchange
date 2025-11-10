@@ -20,6 +20,7 @@ export default function CampaignForm({ campaign, onSuccess, onCancel }: Campaign
   const { user } = useAuth();
   const [loading, setLoading] = useState(false);
   const [uploading, setUploading] = useState(false);
+  const [uploadedFileUrl, setUploadedFileUrl] = useState(campaign?.creative_url || '');
   const [formData, setFormData] = useState({
     title: campaign?.title || '',
     description: campaign?.description || '',
@@ -55,7 +56,7 @@ export default function CampaignForm({ campaign, onSuccess, onCancel }: Campaign
         .from('campaign-ads')
         .getPublicUrl(fileName);
 
-      setFormData({ ...formData, creative_url: publicUrl });
+      setUploadedFileUrl(publicUrl);
       toast({ title: 'File uploaded successfully' });
     } catch (error: any) {
       toast({
@@ -97,13 +98,16 @@ export default function CampaignForm({ campaign, onSuccess, onCancel }: Campaign
         end_date: validatedData.end_date || null,
       };
 
+      // Use uploaded file URL if no manual URL is provided
+      const finalCreativeUrl = validatedData.creative_url || uploadedFileUrl || null;
+
       const campaignData = {
         advertiser_id: user.id,
         title: validatedData.title,
         description: validatedData.description || null,
         budget: validatedData.budget,
         payout: validatedData.payout,
-        creative_url: validatedData.creative_url || null,
+        creative_url: finalCreativeUrl,
         criteria,
         status: 'draft',
       };
@@ -217,13 +221,13 @@ export default function CampaignForm({ campaign, onSuccess, onCancel }: Campaign
               disabled={uploading}
             />
             {uploading && <p className="text-sm text-muted-foreground">Uploading...</p>}
-            {formData.creative_url && (
+            {uploadedFileUrl && (
               <div className="mt-2">
-                <p className="text-sm text-muted-foreground">Current file:</p>
-                {formData.creative_url.match(/\.(mp4|webm|mov)$/i) ? (
-                  <video src={formData.creative_url} controls className="mt-2 max-h-40 rounded-md" />
+                <p className="text-sm text-muted-foreground">Uploaded file preview:</p>
+                {uploadedFileUrl.match(/\.(mp4|webm|mov)$/i) ? (
+                  <video src={uploadedFileUrl} controls className="mt-2 max-h-40 rounded-md" />
                 ) : (
-                  <img src={formData.creative_url} alt="Ad creative" className="mt-2 max-h-40 rounded-md" />
+                  <img src={uploadedFileUrl} alt="Uploaded ad creative" className="mt-2 max-h-40 rounded-md" />
                 )}
               </div>
             )}
