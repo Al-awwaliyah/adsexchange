@@ -58,7 +58,7 @@ serve(async (req) => {
     // Fetch withdrawal details
     const { data: withdrawal, error: withdrawalFetchError } = await supabase
       .from('withdrawals')
-      .select('*')
+      .select('*, wallets!inner(balance, currency_type)')
       .eq('id', withdrawalId)
       .single();
 
@@ -68,20 +68,44 @@ serve(async (req) => {
       throw new Error('Withdrawal has already been processed');
     }
 
-    // Fetch user's wallet
-    const { data: wallet, error: walletFetchError } = await supabase
-      .from('wallets')
-      .select('balance')
-      .eq('user_id', withdrawal.user_id)
-      .single();
-
-    if (walletFetchError) throw walletFetchError;
+    const wallet = withdrawal.wallets;
 
     // Check if user has sufficient balance
     if (wallet.balance < withdrawal.amount) {
       throw new Error('Insufficient balance');
     }
 
+    // If it's a Nigerian bank transfer, use Flutterwave
+    if (withdrawal.payment_method === 'nigerian_bank') {
+      console.log('Processing Nigerian bank transfer via Flutterwave...');
+      
+      try {
+        // Call Flutterwave payout function
+        const flutterwaveResponse = await supabase.functions.invoke('flutterwave-payout', {
+          body: { withdrawalId },
+        });
+
+        if (flutterwaveResponse.error) {
+          throw new Error(flutterwaveResponse.error.message || 'Flutterwave payout failed');
+        }
+
+        console.log('Flutterwave payout completed:', flutterwaveResponse.data);
+
+        return new Response(
+          JSON.stringify({
+            success: true,
+            message: 'Withdrawal approved and payout processed via Flutterwave',
+            ...flutterwaveResponse.data,
+          }),
+          { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        );
+      } catch (flutterwaveError: any) {
+        console.error('Flutterwave payout error:', flutterwaveError);
+        throw new Error(`Flutterwave payout failed: ${flutterwaveError.message}`);
+      }
+    }
+
+    // For other payment methods, manual approval (existing logic)
     const newBalance = wallet.balance - withdrawal.amount;
 
     // Update wallet balance
@@ -120,7 +144,7 @@ serve(async (req) => {
 
     if (transactionError) throw transactionError;
 
-    console.log('Withdrawal approved successfully:', withdrawalId);
+    console.log('Withdrawal approved successfully (manual):', withdrawalId);
 
     return new Response(
       JSON.stringify({
