@@ -17,7 +17,8 @@ export function NINVerification() {
   const [firstName, setFirstName] = useState('');
   const [lastName, setLastName] = useState('');
   const [dateOfBirth, setDateOfBirth] = useState('');
-  const [selfieUrl, setSelfieUrl] = useState('');
+  const [selfieFile, setSelfieFile] = useState<File | null>(null);
+  const [uploading, setUploading] = useState(false);
 
   useEffect(() => {
     fetchStatus();
@@ -40,16 +41,15 @@ export function NINVerification() {
     }
   };
 
-  const handleSelfieUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (!e.target.files || !e.target.files[0] || !user) return;
+  const handleSelfieUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
 
-    const file = e.target.files[0];
-    
     // Validate file size (max 5MB)
     if (file.size > 5 * 1024 * 1024) {
       toast({
-        title: 'Error',
-        description: 'File size must be less than 5MB',
+        title: 'File too large',
+        description: 'Please upload an image smaller than 5MB',
         variant: 'destructive',
       });
       return;
@@ -58,68 +58,39 @@ export function NINVerification() {
     // Validate file type
     if (!file.type.startsWith('image/')) {
       toast({
-        title: 'Error',
+        title: 'Invalid file type',
         description: 'Please upload an image file',
         variant: 'destructive',
       });
       return;
     }
 
-    const fileExt = file.name.split('.').pop();
-    const fileName = `nin-selfies/${user.id}-${Date.now()}.${fileExt}`;
-
-    try {
-      setLoading(true);
-
-      // Upload file to storage
-      const { data: uploadData, error: uploadError } = await supabase.storage
-        .from('task-proofs')
-        .upload(fileName, file, {
-          cacheControl: '3600',
-          upsert: false
-        });
-
-      if (uploadError) throw uploadError;
-
-      // Get the full URL to the uploaded file
-      const { data: { publicUrl } } = supabase.storage
-        .from('task-proofs')
-        .getPublicUrl(fileName);
-
-      setSelfieUrl(publicUrl);
-
-      toast({
-        title: 'Success',
-        description: 'Selfie uploaded successfully',
-      });
-    } catch (error: any) {
-      console.error('Upload error:', error);
-      toast({
-        title: 'Error',
-        description: error.message || 'Failed to upload selfie',
-        variant: 'destructive',
-      });
-    } finally {
-      setLoading(false);
-    }
+    setSelfieFile(file);
+    toast({
+      title: 'Selfie selected',
+      description: 'Photo will be uploaded when you submit',
+    });
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+    if (!user) return;
+
+    // Validate all required fields
     if (!nin || !firstName || !lastName || !dateOfBirth) {
       toast({
-        title: 'Error',
-        description: 'Please fill all required fields',
+        title: 'Missing information',
+        description: 'Please fill in all required fields',
         variant: 'destructive',
       });
       return;
     }
 
+    // Validate NIN format (11 digits)
     if (!/^\d{11}$/.test(nin)) {
       toast({
-        title: 'Error',
-        description: 'NIN must be 11 digits',
+        title: 'Invalid NIN',
+        description: 'NIN must be exactly 11 digits',
         variant: 'destructive',
       });
       return;
@@ -127,24 +98,44 @@ export function NINVerification() {
 
     setLoading(true);
     try {
+      let finalSelfieUrl = null;
+
+      // Upload selfie if provided
+      if (selfieFile) {
+        setUploading(true);
+        const fileExt = selfieFile.name.split('.').pop();
+        const fileName = `${user?.id}/nin_${Date.now()}.${fileExt}`;
+
+        const { error: uploadError } = await supabase.storage
+          .from('task-proofs')
+          .upload(fileName, selfieFile);
+
+        if (uploadError) throw uploadError;
+
+        // Get public URL
+        const { data: { publicUrl } } = supabase.storage
+          .from('task-proofs')
+          .getPublicUrl(fileName);
+
+        finalSelfieUrl = publicUrl;
+        setUploading(false);
+      }
+
       const { data, error } = await supabase.functions.invoke('submit-nin', {
         body: {
           nin,
           firstName,
           lastName,
           dateOfBirth,
-          selfieUrl,
-        },
-        headers: {
-          Authorization: `Bearer ${(await supabase.auth.getSession()).data.session?.access_token}`,
+          selfieUrl: finalSelfieUrl,
         },
       });
 
       if (error) throw error;
 
       toast({
-        title: 'Success',
-        description: data.message || 'NIN verification submitted successfully',
+        title: 'Verification submitted',
+        description: 'Your NIN verification is being reviewed',
       });
 
       // Clear form
@@ -152,18 +143,19 @@ export function NINVerification() {
       setFirstName('');
       setLastName('');
       setDateOfBirth('');
-      setSelfieUrl('');
+      setSelfieFile(null);
 
       // Refresh status
       fetchStatus();
     } catch (error: any) {
       toast({
-        title: 'Error',
+        title: 'Submission failed',
         description: error.message,
         variant: 'destructive',
       });
     } finally {
       setLoading(false);
+      setUploading(false);
     }
   };
 
@@ -274,27 +266,30 @@ export function NINVerification() {
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="selfie">Selfie (Optional)</Label>
-              <div className="flex items-center gap-2">
-                <Label htmlFor="selfie-upload" className="cursor-pointer">
-                  <div className="flex items-center gap-2 text-sm text-primary hover:underline">
-                    <Upload className="h-4 w-4" />
-                    {selfieUrl ? 'Change Selfie' : 'Upload Selfie'}
-                  </div>
-                </Label>
-                <Input
-                  id="selfie-upload"
+              <Label htmlFor="selfie">Photo (Optional)</Label>
+              <div className="border-2 border-dashed rounded-lg p-6 text-center hover:border-primary/50 transition-colors">
+                <input
+                  id="selfie"
                   type="file"
                   accept="image/*"
-                  className="hidden"
                   onChange={handleSelfieUpload}
+                  disabled={loading || uploading || status?.status === 'pending'}
+                  className="hidden"
                 />
-                {selfieUrl && <span className="text-xs text-muted-foreground">✓ Uploaded</span>}
+                <label htmlFor="selfie" className="cursor-pointer">
+                  <Upload className="h-12 w-12 mx-auto mb-2 text-muted-foreground" />
+                  <p className="text-sm font-medium">
+                    {selfieFile ? selfieFile.name : 'Click to upload photo'}
+                  </p>
+                  <p className="text-xs text-muted-foreground mt-1">
+                    PNG, JPG, WEBP (max 5MB)
+                  </p>
+                </label>
               </div>
             </div>
 
-            <Button type="submit" disabled={loading || status?.status === 'pending'}>
-              {loading ? 'Submitting...' : 'Submit Verification'}
+            <Button type="submit" disabled={loading || uploading || status?.status === 'pending'}>
+              {uploading ? 'Uploading...' : loading ? 'Submitting...' : 'Submit Verification'}
             </Button>
 
             {status?.status === 'pending' && (

@@ -15,6 +15,7 @@ export const campaignSchema = z.object({
     .max(1000000, 'Budget cannot exceed $1,000,000'),
   payout: z.number()
     .positive('Payout must be positive')
+    .min(40, 'Minimum payout amount is 40')
     .max(100000, 'Payout cannot exceed $100,000'),
   creative_url: z.string()
     .trim()
@@ -55,6 +56,7 @@ export const campaignSchema = z.object({
 export const withdrawalSchema = z.object({
   amount: z.number()
     .positive('Amount must be positive')
+    .min(100, 'Minimum withdrawal amount is 100')
     .max(1000000, 'Amount cannot exceed $1,000,000'),
   payment_method: z.enum(['nigerian_bank', 'bank_transfer', 'paypal', 'crypto'], {
     required_error: 'Payment method is required',
