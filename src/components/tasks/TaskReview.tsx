@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/hooks/use-toast';
@@ -10,6 +11,7 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, Di
 import { ExternalLink, CheckCircle, XCircle, AlertCircle } from 'lucide-react';
 
 export default function TaskReview() {
+  const navigate = useNavigate();
   const { user, hasRole } = useAuth();
   const [tasks, setTasks] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
@@ -191,12 +193,12 @@ export default function TaskReview() {
                         src={task.proof_url}
                         alt="Task proof"
                         className="w-full h-auto max-h-[500px] object-contain cursor-pointer"
-                        onClick={() => window.open(`/proof/${task.id}`, '_blank')}
+                        onClick={() => navigate(`/proof/${task.id}`)}
                       />
                     ) : task.proof_url.match(/\.(mp4|webm|ogg|mov)$/i) ? (
                       <div 
                         className="cursor-pointer"
-                        onClick={() => window.open(`/proof/${task.id}`, '_blank')}
+                        onClick={() => navigate(`/proof/${task.id}`)}
                       >
                         <video
                           src={task.proof_url}
@@ -204,15 +206,13 @@ export default function TaskReview() {
                         />
                       </div>
                     ) : (
-                      <a
-                        href={`/proof/${task.id}`}
-                        target="_blank"
-                        rel="noopener noreferrer"
+                      <button
+                        onClick={() => navigate(`/proof/${task.id}`)}
                         className="flex items-center gap-2 p-4 text-primary hover:underline"
                       >
                         <ExternalLink className="h-4 w-4" />
                         View Proof
-                      </a>
+                      </button>
                     )}
                   </div>
                 </div>

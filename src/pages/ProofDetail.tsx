@@ -34,7 +34,7 @@ export default function ProofDetail() {
           )
         `)
         .eq('id', id)
-        .single();
+        .maybeSingle();
 
       if (error) throw error;
       setTask(data);

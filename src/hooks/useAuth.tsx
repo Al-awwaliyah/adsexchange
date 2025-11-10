@@ -73,7 +73,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         .from('profiles')
         .select('id')
         .eq('referral_code', referralCode.toUpperCase())
-        .single();
+        .maybeSingle();
       
       if (!referrer) {
         return { error: { message: 'Invalid referral code' } };
@@ -111,7 +111,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
           .from('profiles')
           .select('id')
           .eq('referral_code', referralCode.toUpperCase())
-          .single();
+          .maybeSingle();
         
         if (referrer) {
           await supabase
