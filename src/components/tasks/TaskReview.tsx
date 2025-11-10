@@ -190,16 +190,22 @@ export default function TaskReview() {
                       <img
                         src={task.proof_url}
                         alt="Task proof"
-                        className="w-full h-auto max-h-[500px] object-contain"
-                        onError={(e) => {
-                          console.error('Image failed to load:', task.proof_url);
-                          e.currentTarget.style.display = 'none';
-                          e.currentTarget.nextElementSibling?.classList.remove('hidden');
-                        }}
+                        className="w-full h-auto max-h-[500px] object-contain cursor-pointer"
+                        onClick={() => window.open(`/proof/${task.id}`, '_blank')}
                       />
+                    ) : task.proof_url.match(/\.(mp4|webm|ogg|mov)$/i) ? (
+                      <div 
+                        className="cursor-pointer"
+                        onClick={() => window.open(`/proof/${task.id}`, '_blank')}
+                      >
+                        <video
+                          src={task.proof_url}
+                          className="w-full h-auto max-h-[500px] object-contain"
+                        />
+                      </div>
                     ) : (
                       <a
-                        href={task.proof_url}
+                        href={`/proof/${task.id}`}
                         target="_blank"
                         rel="noopener noreferrer"
                         className="flex items-center gap-2 p-4 text-primary hover:underline"
@@ -208,14 +214,6 @@ export default function TaskReview() {
                         View Proof
                       </a>
                     )}
-                    <a
-                      href={task.proof_url}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="hidden p-2 text-sm text-center text-primary hover:underline block"
-                    >
-                      Click to view proof
-                    </a>
                   </div>
                 </div>
               )}
