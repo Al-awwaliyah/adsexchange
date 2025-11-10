@@ -230,7 +230,7 @@ export default function CampaignForm({ campaign, onSuccess, onCancel }: Campaign
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="creative_url">Or Enter Creative URL</Label>
+            <Label htmlFor="creative_url">Enter Creative URL</Label>
             <Input
               id="creative_url"
               value={formData.creative_url}
