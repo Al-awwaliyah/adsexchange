@@ -12,6 +12,9 @@ verify_jwt = false
 [functions.flutterwave-payout]
 verify_jwt = false
 
+[functions.flutterwave-verify-account]
+verify_jwt = true
+
 [functions.send-notification-email]
 verify_jwt = true
 

@@ -25,6 +25,7 @@ export default function WithdrawalForm() {
     account_name: '',
     account_details: '',
   });
+  const [verifyingAccount, setVerifyingAccount] = useState(false);
 
   useEffect(() => {
     if (user) {
@@ -68,6 +69,42 @@ export default function WithdrawalForm() {
       }
     } catch (error) {
       console.error('Error fetching wallet:', error);
+    }
+  };
+
+  const verifyBankAccount = async (bankName: string, accountNumber: string) => {
+    if (!bankName || accountNumber.length !== 10) return;
+
+    setVerifyingAccount(true);
+    try {
+      const { data, error } = await supabase.functions.invoke('flutterwave-verify-account', {
+        body: { 
+          bank_name: bankName,
+          account_number: accountNumber 
+        },
+      });
+
+      if (error) throw error;
+
+      if (data?.success && data?.account_name) {
+        setFormData(prev => ({ ...prev, account_name: data.account_name }));
+        toast({
+          title: 'Account Verified',
+          description: `Account name: ${data.account_name}`,
+        });
+      } else {
+        throw new Error(data?.error || 'Failed to verify account');
+      }
+    } catch (error: any) {
+      console.error('Account verification error:', error);
+      toast({
+        title: 'Verification Failed',
+        description: error.message || 'Could not verify account details',
+        variant: 'destructive',
+      });
+      setFormData(prev => ({ ...prev, account_name: '' }));
+    } finally {
+      setVerifyingAccount(false);
     }
   };
 
@@ -274,7 +311,13 @@ export default function WithdrawalForm() {
                 <Label htmlFor="bank_name">Bank Name</Label>
                 <Select
                   value={formData.bank_name}
-                  onValueChange={(value) => setFormData({ ...formData, bank_name: value })}
+                  onValueChange={(value) => {
+                    setFormData({ ...formData, bank_name: value, account_name: '' });
+                    // Auto-verify if account number already entered
+                    if (formData.account_number.length === 10) {
+                      verifyBankAccount(value, formData.account_number);
+                    }
+                  }}
                 >
                   <SelectTrigger>
                     <SelectValue placeholder="Select your bank" />
@@ -296,20 +339,31 @@ export default function WithdrawalForm() {
                   type="text"
                   placeholder="0123456789"
                   value={formData.account_number}
-                  onChange={(e) => setFormData({ ...formData, account_number: e.target.value })}
+                  onChange={(e) => {
+                    const value = e.target.value.replace(/\D/g, '');
+                    setFormData({ ...formData, account_number: value });
+                    
+                    // Auto-verify when 10 digits entered and bank selected
+                    if (value.length === 10 && formData.bank_name) {
+                      verifyBankAccount(formData.bank_name, value);
+                    }
+                  }}
                   maxLength={10}
                   required
                 />
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="account_name">Account Name</Label>
+                <Label htmlFor="account_name">
+                  Account Name {verifyingAccount && <span className="text-xs text-muted-foreground">(Verifying...)</span>}
+                </Label>
                 <Input
                   id="account_name"
                   type="text"
                   placeholder="Account holder name"
                   value={formData.account_name}
                   onChange={(e) => setFormData({ ...formData, account_name: e.target.value })}
+                  disabled={verifyingAccount}
                   required
                 />
               </div>
