@@ -35,16 +35,10 @@ serve(async (req) => {
 
     console.log('Processing payout for withdrawal:', withdrawalId);
 
-    // Fetch withdrawal details with user profile
+    // Fetch withdrawal details
     const { data: withdrawal, error: withdrawalError } = await supabase
       .from('withdrawals')
-      .select(`
-        *,
-        profiles:user_id (
-          id,
-          full_name
-        )
-      `)
+      .select('*')
       .eq('id', withdrawalId)
       .single();
 
