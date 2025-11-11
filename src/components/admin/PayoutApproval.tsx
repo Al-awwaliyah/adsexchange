@@ -4,7 +4,7 @@ import { toast } from '@/hooks/use-toast';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { CheckCircle, XCircle, Clock } from 'lucide-react';
+import { CheckCircle, XCircle, Clock, Copy } from 'lucide-react';
 
 export default function PayoutApproval() {
   const [withdrawals, setWithdrawals] = useState<any[]>([]);
@@ -100,6 +100,23 @@ export default function PayoutApproval() {
     }
   };
 
+  const copyPaymentDetails = (withdrawal: any) => {
+    const details = `
+Bank: ${withdrawal.payment_details?.bank_name}
+Account Number: ${withdrawal.payment_details?.account_number}
+Account Name: ${withdrawal.payment_details?.account_name}
+Amount: ₦${withdrawal.amount}
+Currency: NGN
+Withdrawal ID: ${withdrawal.id}
+    `.trim();
+    
+    navigator.clipboard.writeText(details);
+    toast({ 
+      title: 'Copied!',
+      description: 'Payment details copied to clipboard. Process in Flutterwave dashboard.' 
+    });
+  };
+
   const getStatusColor = (status: string) => {
     switch (status) {
       case 'completed':
@@ -189,6 +206,17 @@ export default function PayoutApproval() {
                 </p>
                 {withdrawal.status === 'pending' && (
                   <div className="flex gap-2">
+                    {withdrawal.payment_method === 'nigerian_bank' && (
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        onClick={() => copyPaymentDetails(withdrawal)}
+                        disabled={processing}
+                      >
+                        <Copy className="h-4 w-4 mr-1" />
+                        Copy Details
+                      </Button>
+                    )}
                     <Button
                       size="sm"
                       onClick={() => handleApprove(withdrawal)}
