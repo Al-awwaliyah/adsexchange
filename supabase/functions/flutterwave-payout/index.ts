@@ -42,9 +42,19 @@ serve(async (req) => {
       .eq('id', withdrawalId)
       .single();
 
+    console.log('Withdrawal fetch result:', { 
+      found: !!withdrawal, 
+      error: withdrawalError ? withdrawalError.message : 'none',
+      withdrawalId 
+    });
+
     if (withdrawalError) {
       console.error('Error fetching withdrawal:', withdrawalError);
-      throw new Error('Withdrawal not found');
+      throw new Error(`Withdrawal not found: ${withdrawalError.message}`);
+    }
+
+    if (!withdrawal) {
+      throw new Error('Withdrawal record not found in database');
     }
 
     if (withdrawal.status !== 'pending') {

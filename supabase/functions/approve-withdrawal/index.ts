@@ -85,6 +85,8 @@ serve(async (req) => {
     // If it's a Nigerian bank transfer, use Flutterwave
     if (withdrawal.payment_method === 'nigerian_bank') {
       console.log('Processing Nigerian bank transfer via Flutterwave...');
+      console.log('Withdrawal ID being sent:', withdrawalId);
+      console.log('Withdrawal details:', JSON.stringify(withdrawal));
       
       try {
         // Call Flutterwave payout function
@@ -92,8 +94,18 @@ serve(async (req) => {
           body: { withdrawalId },
         });
 
+        console.log('Flutterwave response status:', flutterwaveResponse.error ? 'error' : 'success');
+        console.log('Flutterwave response:', JSON.stringify(flutterwaveResponse));
+
         if (flutterwaveResponse.error) {
+          console.error('Flutterwave error details:', flutterwaveResponse.error);
           throw new Error(flutterwaveResponse.error.message || 'Flutterwave payout failed');
+        }
+
+        // Check if response data indicates an error
+        if (flutterwaveResponse.data?.error) {
+          console.error('Flutterwave returned error in data:', flutterwaveResponse.data.error);
+          throw new Error(flutterwaveResponse.data.error);
         }
 
         console.log('Flutterwave payout completed:', flutterwaveResponse.data);
