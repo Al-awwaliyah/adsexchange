@@ -58,7 +58,7 @@ serve(async (req) => {
     // Fetch withdrawal details
     const { data: withdrawal, error: withdrawalFetchError } = await supabase
       .from('withdrawals')
-      .select('*, wallets!inner(balance, currency_type)')
+      .select('*')
       .eq('id', withdrawalId)
       .single();
 
@@ -68,7 +68,14 @@ serve(async (req) => {
       throw new Error('Withdrawal has already been processed');
     }
 
-    const wallet = withdrawal.wallets;
+    // Fetch wallet details
+    const { data: wallet, error: walletError } = await supabase
+      .from('wallets')
+      .select('balance, currency_type')
+      .eq('user_id', withdrawal.user_id)
+      .single();
+
+    if (walletError) throw walletError;
 
     // Check if user has sufficient balance
     if (wallet.balance < withdrawal.amount) {
