@@ -97,9 +97,20 @@ serve(async (req) => {
         console.log('Flutterwave response status:', flutterwaveResponse.error ? 'error' : 'success');
         console.log('Flutterwave response:', JSON.stringify(flutterwaveResponse));
 
+        // If there's an error in the response, try to extract the actual error details
         if (flutterwaveResponse.error) {
           console.error('Flutterwave error details:', flutterwaveResponse.error);
-          throw new Error(flutterwaveResponse.error.message || 'Flutterwave payout failed');
+          
+          // Try to read the response body for more details
+          let errorMessage = 'Flutterwave payout failed';
+          
+          if (flutterwaveResponse.data?.error) {
+            errorMessage = flutterwaveResponse.data.error;
+          } else if (flutterwaveResponse.data?.details) {
+            errorMessage = flutterwaveResponse.data.details;
+          }
+          
+          throw new Error(errorMessage);
         }
 
         // Check if response data indicates an error
