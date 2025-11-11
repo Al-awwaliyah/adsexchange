@@ -5,38 +5,44 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
 
-// Map Nigerian bank names to Flutterwave bank codes
-const bankCodeMap: { [key: string]: string } = {
-  'Access Bank': '044',
-  'Citibank': '023',
-  'Ecobank Nigeria': '050',
-  'Fidelity Bank': '070',
-  'First Bank of Nigeria': '011',
-  'First City Monument Bank (FCMB)': '214',
-  'Globus Bank': '00103',
-  'Guaranty Trust Bank (GTBank)': '058',
-  'Heritage Bank': '030',
-  'Keystone Bank': '082',
-  'Kuda Bank': '50211',
-  'Moniepoint': '50515',
-  'OPay': '999992',
-  'PalmPay': '999991',
-  'Parallex Bank': '526',
-  'Polaris Bank': '076',
-  'Providus Bank': '101',
-  'Rubies Bank': '125',
-  'Stanbic IBTC Bank': '221',
-  'Standard Chartered Bank': '068',
-  'Sterling Bank': '232',
-  'SunTrust Bank': '100',
-  'Titan Trust Bank': '102',
-  'Union Bank of Nigeria': '032',
-  'United Bank for Africa (UBA)': '033',
-  'Unity Bank': '215',
-  'VFD Microfinance Bank': '566',
-  'Wema Bank': '035',
-  'Zenith Bank': '057',
-};
+// Fetch banks from Flutterwave and find matching code
+async function getBankCode(bankName: string, secretKey: string): Promise<string | null> {
+  try {
+    const response = await fetch('https://api.flutterwave.com/v3/banks/NG', {
+      headers: {
+        'Authorization': `Bearer ${secretKey}`,
+      },
+    });
+
+    const data = await response.json();
+    
+    if (data.status === 'success' && data.data) {
+      // Try exact match first
+      const exactMatch = data.data.find((bank: any) => 
+        bank.name.toLowerCase() === bankName.toLowerCase()
+      );
+      
+      if (exactMatch) {
+        return exactMatch.code;
+      }
+      
+      // Try partial match
+      const partialMatch = data.data.find((bank: any) => 
+        bank.name.toLowerCase().includes(bankName.toLowerCase()) ||
+        bankName.toLowerCase().includes(bank.name.toLowerCase())
+      );
+      
+      if (partialMatch) {
+        return partialMatch.code;
+      }
+    }
+    
+    return null;
+  } catch (error) {
+    console.error('Error fetching banks:', error);
+    return null;
+  }
+}
 
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
@@ -58,13 +64,13 @@ serve(async (req) => {
       throw new Error('Bank name and account number are required');
     }
 
-    // Get bank code from name
-    const bank_code = bankCodeMap[bank_name];
+    // Get bank code from Flutterwave API
+    const bank_code = await getBankCode(bank_name, flutterwaveSecretKey);
     if (!bank_code) {
-      throw new Error(`Bank code not found for: ${bank_name}`);
+      throw new Error(`Bank code not found for: ${bank_name}. Please contact support.`);
     }
 
-    console.log('Using bank code:', bank_code);
+    console.log('Using bank code:', bank_code, 'for bank:', bank_name);
 
     // Call Flutterwave account verification API
     const flutterwaveResponse = await fetch('https://api.flutterwave.com/v3/accounts/resolve', {
