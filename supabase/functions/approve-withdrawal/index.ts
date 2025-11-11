@@ -82,60 +82,7 @@ serve(async (req) => {
       throw new Error('Insufficient balance');
     }
 
-    // If it's a Nigerian bank transfer, use Flutterwave
-    if (withdrawal.payment_method === 'nigerian_bank') {
-      console.log('Processing Nigerian bank transfer via Flutterwave...');
-      console.log('Withdrawal ID being sent:', withdrawalId);
-      console.log('Withdrawal details:', JSON.stringify(withdrawal));
-      
-      try {
-        // Call Flutterwave payout function
-        const flutterwaveResponse = await supabase.functions.invoke('flutterwave-payout', {
-          body: { withdrawalId },
-        });
-
-        console.log('Flutterwave response status:', flutterwaveResponse.error ? 'error' : 'success');
-        console.log('Flutterwave response:', JSON.stringify(flutterwaveResponse));
-
-        // If there's an error in the response, try to extract the actual error details
-        if (flutterwaveResponse.error) {
-          console.error('Flutterwave error details:', flutterwaveResponse.error);
-          
-          // Try to read the response body for more details
-          let errorMessage = 'Flutterwave payout failed';
-          
-          if (flutterwaveResponse.data?.error) {
-            errorMessage = flutterwaveResponse.data.error;
-          } else if (flutterwaveResponse.data?.details) {
-            errorMessage = flutterwaveResponse.data.details;
-          }
-          
-          throw new Error(errorMessage);
-        }
-
-        // Check if response data indicates an error
-        if (flutterwaveResponse.data?.error) {
-          console.error('Flutterwave returned error in data:', flutterwaveResponse.data.error);
-          throw new Error(flutterwaveResponse.data.error);
-        }
-
-        console.log('Flutterwave payout completed:', flutterwaveResponse.data);
-
-        return new Response(
-          JSON.stringify({
-            success: true,
-            message: 'Withdrawal approved and payout processed via Flutterwave',
-            ...flutterwaveResponse.data,
-          }),
-          { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-        );
-      } catch (flutterwaveError: any) {
-        console.error('Flutterwave payout error:', flutterwaveError);
-        throw new Error(`Flutterwave payout failed: ${flutterwaveError.message}`);
-      }
-    }
-
-    // For other payment methods, manual approval (existing logic)
+    // Manual approval for all payment methods
     const newBalance = wallet.balance - withdrawal.amount;
 
     // Update wallet balance
