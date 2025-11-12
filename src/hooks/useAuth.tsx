@@ -70,17 +70,16 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     // Clean and validate referral code if provided
     const cleanReferralCode = referralCode?.trim().toUpperCase();
     
-    // If referral code provided, verify it exists and user is verified
+    // If referral code provided, verify it exists
     if (cleanReferralCode) {
       const { data: referrer } = await supabase
         .from('profiles')
-        .select('id, verified')
+        .select('id')
         .eq('referral_code', cleanReferralCode)
-        .eq('verified', true)
         .maybeSingle();
       
       if (!referrer) {
-        return { error: { message: 'Invalid referral code. Please check the code or ensure the referrer is verified.' } };
+        return { error: { message: 'Invalid referral code. Please check the code and try again.' } };
       }
     }
     
@@ -109,22 +108,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         console.error('Error updating wallet currency:', walletError);
       }
 
-      // Set referred_by if referral code was provided
-      if (cleanReferralCode) {
-        const { data: referrer } = await supabase
-          .from('profiles')
-          .select('id')
-          .eq('referral_code', cleanReferralCode)
-          .eq('verified', true)
-          .maybeSingle();
-        
-        if (referrer) {
-          await supabase
-            .from('profiles')
-            .update({ referred_by: referrer.id })
-            .eq('id', data.user.id);
-        }
-      }
+      // Note: referred_by is now handled by the database trigger
     }
 
     return { error };
