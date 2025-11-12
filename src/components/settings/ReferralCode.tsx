@@ -4,20 +4,18 @@ import { supabase } from '@/integrations/supabase/client';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Badge } from '@/components/ui/badge';
 import { toast } from '@/hooks/use-toast';
-import { Copy, Users } from 'lucide-react';
+import { Copy } from 'lucide-react';
+import ReferralDashboard from './ReferralDashboard';
 
 export default function ReferralCode() {
   const { user } = useAuth();
   const [profile, setProfile] = useState<any>(null);
-  const [referralStats, setReferralStats] = useState({ count: 0, names: [] as string[] });
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     if (user) {
       fetchProfile();
-      fetchReferralStats();
     }
   }, [user]);
 
@@ -35,23 +33,6 @@ export default function ReferralCode() {
       console.error('Error fetching profile:', error);
     } finally {
       setLoading(false);
-    }
-  };
-
-  const fetchReferralStats = async () => {
-    try {
-      const { data, error } = await supabase
-        .from('profiles')
-        .select('full_name')
-        .eq('referred_by', user?.id);
-
-      if (error) throw error;
-      setReferralStats({
-        count: data?.length || 0,
-        names: data?.map(p => p.full_name).filter(Boolean) || []
-      });
-    } catch (error) {
-      console.error('Error fetching referral stats:', error);
     }
   };
 
@@ -89,7 +70,7 @@ export default function ReferralCode() {
   }
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-6">
       <Card>
         <CardHeader>
           <CardTitle>Your Referral Code</CardTitle>
@@ -112,35 +93,7 @@ export default function ReferralCode() {
         </CardContent>
       </Card>
 
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Users className="h-5 w-5" />
-            Referral Statistics
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="space-y-4">
-            <div>
-              <p className="text-2xl font-bold">{referralStats.count}</p>
-              <p className="text-sm text-muted-foreground">Total Referrals</p>
-            </div>
-            {referralStats.names.length > 0 && (
-              <div>
-                <p className="text-sm font-medium mb-2">Recent Referrals:</p>
-                <div className="flex flex-wrap gap-2">
-                  {referralStats.names.slice(0, 5).map((name, idx) => (
-                    <Badge key={idx} variant="secondary">{name}</Badge>
-                  ))}
-                  {referralStats.names.length > 5 && (
-                    <Badge variant="outline">+{referralStats.names.length - 5} more</Badge>
-                  )}
-                </div>
-              </div>
-            )}
-          </div>
-        </CardContent>
-      </Card>
+      <ReferralDashboard />
     </div>
   );
 }
