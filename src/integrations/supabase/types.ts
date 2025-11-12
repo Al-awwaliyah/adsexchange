@@ -383,6 +383,7 @@ export type Database = {
         }
         Returns: boolean
       }
+      validate_referral_code: { Args: { code: string }; Returns: boolean }
     }
     Enums: {
       app_role: "advertiser" | "publisher" | "admin" | "promoter"

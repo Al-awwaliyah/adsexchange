@@ -70,15 +70,12 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     // Clean and validate referral code if provided
     const cleanReferralCode = referralCode?.trim().toUpperCase();
     
-    // If referral code provided, verify it exists
+    // If referral code provided, verify it exists using public function (bypasses RLS)
     if (cleanReferralCode) {
-      const { data: referrer } = await supabase
-        .from('profiles')
-        .select('id')
-        .eq('referral_code', cleanReferralCode)
-        .maybeSingle();
+      const { data: isValid, error: validationError } = await supabase
+        .rpc('validate_referral_code', { code: cleanReferralCode });
       
-      if (!referrer) {
+      if (validationError || !isValid) {
         return { error: { message: 'Invalid referral code. Please check the code and try again.' } };
       }
     }
