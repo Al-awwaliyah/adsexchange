@@ -38,7 +38,7 @@ serve(async (req) => {
     
     console.log('Flutterwave webhook received:', JSON.stringify(payload, null, 2));
 
-    // Handle successful payment (deposits)
+    // Handle successful payment
     if (payload.event === 'charge.completed' && payload.data.status === 'successful') {
       const amount = parseFloat(payload.data.amount);
       const currency = payload.data.currency;
@@ -129,78 +129,6 @@ serve(async (req) => {
         amount,
         currency,
         newBalance,
-      });
-
-      return new Response(
-        JSON.stringify({ status: 'success' }),
-        { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      );
-    }
-
-    // Handle transfer completion (payouts)
-    if (payload.event === 'transfer.completed' && payload.data.status === 'successful') {
-      const transferRef = payload.data.reference;
-      const amount = parseFloat(payload.data.amount);
-      
-      console.log('Transfer completed:', { transferRef, amount });
-
-      // Find the withdrawal by reference (using metadata or amount matching)
-      const { data: withdrawal, error: findError } = await supabase
-        .from('withdrawals')
-        .select('*')
-        .eq('status', 'pending')
-        .eq('amount', amount)
-        .order('created_at', { ascending: false })
-        .limit(1)
-        .single();
-
-      if (findError || !withdrawal) {
-        console.log('No matching withdrawal found for transfer:', transferRef);
-        return new Response(
-          JSON.stringify({ status: 'no_match' }),
-          { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-        );
-      }
-
-      // Update withdrawal status
-      const { error: updateError } = await supabase
-        .from('withdrawals')
-        .update({
-          status: 'completed',
-          processed_at: new Date().toISOString(),
-        })
-        .eq('id', withdrawal.id);
-
-      if (updateError) {
-        console.error('Failed to update withdrawal:', updateError);
-        throw updateError;
-      }
-
-      // Create transaction record
-      const { error: txError } = await supabase
-        .from('transactions')
-        .insert({
-          from_user_id: withdrawal.user_id,
-          amount: amount,
-          transaction_type: 'withdrawal',
-          status: 'completed',
-          reference: transferRef,
-          metadata: {
-            withdrawal_id: withdrawal.id,
-            flutterwave_reference: transferRef,
-            processor: 'flutterwave',
-          },
-        });
-
-      if (txError) {
-        console.error('Failed to create transaction:', txError);
-        throw txError;
-      }
-
-      console.log('Payout processed successfully via webhook:', {
-        withdrawalId: withdrawal.id,
-        amount,
-        transferRef,
       });
 
       return new Response(
