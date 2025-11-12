@@ -77,16 +77,13 @@ serve(async (req) => {
 
     if (walletError) throw walletError;
 
-    // Check if user has sufficient balance (convert to numbers for proper comparison)
-    const currentBalance = parseFloat(wallet.balance);
-    const withdrawalAmount = parseFloat(withdrawal.amount);
-    
-    if (currentBalance < withdrawalAmount) {
+    // Check if user has sufficient balance
+    if (wallet.balance < withdrawal.amount) {
       throw new Error('Insufficient balance');
     }
 
     // Manual approval for all payment methods
-    const newBalance = currentBalance - withdrawalAmount;
+    const newBalance = wallet.balance - withdrawal.amount;
 
     // Update wallet balance
     const { error: walletUpdateError } = await supabase
