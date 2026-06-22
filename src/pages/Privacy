@@ -1,0 +1,29 @@
+<section class="container">
+  <h1>Privacy Policy</h1>
+
+  <p>
+    AdsExchange respects your privacy and is committed to protecting your personal data.
+  </p>
+
+  <h2>Information We Collect</h2>
+  <ul>
+    <li>Email address</li>
+    <li>Username and profile details</li>
+    <li>Activity related to tasks and earnings</li>
+  </ul>
+
+  <h2>How We Use Your Data</h2>
+  <ul>
+    <li>To manage your account</li>
+    <li>To process tasks and payments</li>
+    <li>To improve platform performance</li>
+  </ul>
+
+  <h2>Data Protection</h2>
+  <p>
+    Your data is securely stored using trusted cloud infrastructure and is not sold to third parties.
+  </p>
+
+  <h2>Contact</h2>
+  <p>Email: privacy@adsexchange.com</p>
+</section>
