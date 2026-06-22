@@ -13,8 +13,8 @@ import PaymentHistory from "./pages/PaymentHistory";
 import Settings from "./pages/Settings";
 import TaskDetail from "./pages/TaskDetail";
 import ProofDetail from "./pages/ProofDetail";
-import Navbar from "./components/Navbar";
-import Footer from "./components/Footer";
+import Navbar from "@/components/Navbar";
+import Footer from "@/components/Footer";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
