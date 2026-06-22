@@ -5,6 +5,10 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { AuthProvider } from "@/hooks/useAuth";
+
+import Navbar from "./components/Navbar";
+import Footer from "./components/Footer";
+
 import Index from "./pages/Index";
 import Auth from "./pages/Auth";
 import Dashboard from "./pages/Dashboard";
@@ -13,8 +17,10 @@ import PaymentHistory from "./pages/PaymentHistory";
 import Settings from "./pages/Settings";
 import TaskDetail from "./pages/TaskDetail";
 import ProofDetail from "./pages/ProofDetail";
-import Navbar from "@/components/Navbar";
-import Footer from "@/components/Footer";
+import About from "./pages/About";
+import Contact from "./pages/Contact";
+import Privacy from "./pages/Privacy";
+import Terms from "./pages/Terms";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -35,7 +41,10 @@ const App = () => (
             <Route path="/payment-history" element={<PaymentHistory />} />
             <Route path="/task/:id" element={<TaskDetail />} />
             <Route path="/proof/:id" element={<ProofDetail />} />
-          
+            <Route path="/about" element={<About />} />
+            <Route path="/contact" element={<Contact />} />
+            <Route path="/privacy" element={<Privacy />} />
+            <Route path="/terms" element={<Terms />} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
           </Routes>
