@@ -132,21 +132,9 @@ const Index = () => {
             <div className="flex flex-col gap-2 text-sm text-gray-600">
               <Link className="hover:text-blue-600" to="/">Home</Link>
               <Link className="hover:text-blue-600" to="/about">About</Link>
-              <Link className="hover:text-blue-600" to="/contact">Contact</Link>
-              <Link className="hover:text-blue-600" to="/dashboard">Dashboard</Link>
             </div>
           </div>
 
-          {/* Legal */}
-          <div>
-            <h3 className="font-semibold mb-3 text-gray-800">
-              Legal
-            </h3>
-            <div className="flex flex-col gap-2 text-sm text-gray-600">
-              <Link className="hover:text-blue-600" to="/privacy">Privacy Policy</Link>
-              <Link className="hover:text-blue-600" to="/terms">Terms & Conditions</Link>
-            </div>
-          </div>
         
         {/* Bottom Bar */}
         <div className="border-t mt-8 pt-5 text-center text-xs text-gray-500">
