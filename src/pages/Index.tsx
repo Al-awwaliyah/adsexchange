@@ -116,9 +116,6 @@ const Index = () => {
       <footer>
           {/* Brand */}
           <div>
-            <h3 className="border-t mt-8 pt-9 text-center font-bold text-xl text-gray-800">
-              AdsExchange
-            </h3>
             <p className="border-t mt-8 pt-9 text-center text-gray-600 text-sm leading-relaxed">
               Connecting advertisers with promoters through simple and effective task-based marketing.
             </p>
