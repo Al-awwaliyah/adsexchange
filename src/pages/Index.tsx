@@ -116,14 +116,14 @@ const Index = () => {
       <footer>
           {/* Brand */}
           <div>
-            <p className="border-t mt-8 pt-9 text-center text-gray-600 text-sm leading-relaxed">
+            <p className="border-t mt-8 pt-10 text-center text-gray-600 text-sm leading-relaxed">
               Connecting advertisers with promoters through simple and effective task-based marketing.
             </p>
           </div>
 
         
         {/* Bottom Bar */}
-        <div className="border-t mt-8 pt-5 text-center text-xs text-gray-500">
+        <div className="border-t mt-8 pt-8 text-center text-xs text-gray-500">
           © {new Date().getFullYear()} AdsExchange. All rights reserved.
         </div>
 
