@@ -83,3 +83,11 @@
     "vite": "^5.4.19"
   }
 }
+{
+  "rewrites": [
+    {
+      "source": "/(.*)",
+      "destination": "/index.html"
+    }
+  ]
+}
