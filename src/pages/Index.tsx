@@ -113,7 +113,7 @@ const Index = () => {
         </section>
       </main>
 
-    <footer className="bg-gray-100 border-t mt-10">
+    <footer>
       <div className="max-w-7xl mx-auto px-4 py-8">
 
         <div className="grid md:grid-cols-3 gap-8">
