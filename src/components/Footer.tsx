@@ -1,12 +1,7 @@
 export default function Footer() {
   return (
-    <div style={{
-      background: "blue",
-      color: "white",
-      padding: "20px",
-      textAlign: "center"
-    }}>
-      TEST FOOTER
-    </div>
+    <footer className="bg-slate-900 text-white p-6 text-center">
+      © 2026 AdsExchange. All rights reserved.
+    </footer>
   );
 }
