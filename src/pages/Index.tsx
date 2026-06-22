@@ -113,11 +113,7 @@ const Index = () => {
         </section>
       </main>
 
-      <footer className="border-t py-8 mt-16">
-        <div className="container mx-auto px-4 text-center text-muted-foreground">
-          <p>&copy; 2025 AdExchange. All rights reserved.</p>
-        </div>
-      </footer>
+    
     </div>
   );
 };
