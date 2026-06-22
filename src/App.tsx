@@ -13,7 +13,6 @@ import PaymentHistory from "./pages/PaymentHistory";
 import Settings from "./pages/Settings";
 import TaskDetail from "./pages/TaskDetail";
 import ProofDetail from "./pages/ProofDetail";
-import About from "./pages/About";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -34,7 +33,6 @@ const App = () => (
             <Route path="/payment-history" element={<PaymentHistory />} />
             <Route path="/task/:id" element={<TaskDetail />} />
             <Route path="/proof/:id" element={<ProofDetail />} />
-            <Route path="/about" element={<About />} 
           
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
