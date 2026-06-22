@@ -22,3 +22,4 @@
   <h2>Contact</h2>
   <p>Email: support@adsexchange.com</p>
 </section>
+export default About;
