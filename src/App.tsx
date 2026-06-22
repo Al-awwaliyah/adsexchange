@@ -13,6 +13,11 @@ import PaymentHistory from "./pages/PaymentHistory";
 import Settings from "./pages/Settings";
 import TaskDetail from "./pages/TaskDetail";
 import ProofDetail from "./pages/ProofDetail";
+import About from "./pages/About";
+import Terms from "./pages/Terms";
+import Privacy from "./pages/Privacy";
+import Contact from "./pages/Contact";
+import Realisticaboutbrand from "./pages/Realisticaboutbrand";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
