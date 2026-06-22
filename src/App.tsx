@@ -30,7 +30,6 @@ const App = () => (
       <BrowserRouter>
         <AuthProvider>
 
-          <Navbar />
           <Routes>
             <Route path="/" element={<Index />} />
             <Route path="/auth" element={<Auth />} />
@@ -46,6 +45,7 @@ const App = () => (
           </Routes>
 
           <footer/>
+          
         </AuthProvider>
       </BrowserRouter>
     </TooltipProvider>
