@@ -1,0 +1,153 @@
+{
+  "version": 1,
+  "sdk_version": "0.26.1",
+  "path": "/mcp",
+  "auth": {
+    "type": "oauth",
+    "issuer": "https://ywrgibkaacpqdhimswul.supabase.co/auth/v1",
+    "accepted_audiences": [
+      "authenticated"
+    ]
+  },
+  "mcp": {
+    "server": {
+      "name": "adexchange",
+      "version": "0.1.0",
+      "title": "AdExchange"
+    },
+    "tools": [
+      {
+        "name": "get_my_account",
+        "title": "Get my account",
+        "description": "Get the signed-in user's AdExchange profile, roles and wallet balance.",
+        "annotations": {
+          "readOnlyHint": true,
+          "idempotentHint": true,
+          "openWorldHint": false
+        },
+        "inputSchema": {
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "type": "object",
+          "properties": {}
+        },
+        "outputSchema": null
+      },
+      {
+        "name": "list_campaigns",
+        "title": "List campaigns",
+        "description": "List AdExchange campaigns visible to the signed-in user (their own campaigns as an advertiser, or approved active campaigns available to promote).",
+        "annotations": {
+          "readOnlyHint": true,
+          "idempotentHint": true,
+          "openWorldHint": false
+        },
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "status": {
+              "type": "string",
+              "description": "Optional status filter, e.g. 'active', 'paused', 'completed'."
+            },
+            "limit": {
+              "type": "integer",
+              "description": "Max campaigns to return (default 20)."
+            }
+          },
+          "additionalProperties": false,
+          "$schema": "http://json-schema.org/draft-07/schema#"
+        },
+        "outputSchema": null
+      },
+      {
+        "name": "create_campaign",
+        "title": "Create campaign",
+        "description": "Create a new AdExchange campaign owned by the signed-in advertiser. Campaigns start unapproved and pending admin review.",
+        "annotations": {
+          "readOnlyHint": false,
+          "destructiveHint": false,
+          "openWorldHint": false
+        },
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "title": {
+              "type": "string",
+              "minLength": 1,
+              "description": "Campaign title."
+            },
+            "description": {
+              "type": "string",
+              "description": "What promoters must do."
+            },
+            "budget": {
+              "type": "number",
+              "exclusiveMinimum": 0,
+              "description": "Total campaign budget."
+            },
+            "payout": {
+              "type": "number",
+              "exclusiveMinimum": 0,
+              "description": "Payout per completed task."
+            }
+          },
+          "required": [
+            "title",
+            "budget",
+            "payout"
+          ],
+          "additionalProperties": false,
+          "$schema": "http://json-schema.org/draft-07/schema#"
+        },
+        "outputSchema": null
+      },
+      {
+        "name": "list_my_tasks",
+        "title": "List my tasks",
+        "description": "List promotion tasks claimed by the signed-in promoter, with their campaign and current status.",
+        "annotations": {
+          "readOnlyHint": true,
+          "idempotentHint": true,
+          "openWorldHint": false
+        },
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "status": {
+              "type": "string",
+              "description": "Optional status filter, e.g. 'claimed', 'submitted', 'approved', 'rejected'."
+            },
+            "limit": {
+              "type": "integer",
+              "description": "Max tasks to return (default 20)."
+            }
+          },
+          "additionalProperties": false,
+          "$schema": "http://json-schema.org/draft-07/schema#"
+        },
+        "outputSchema": null
+      },
+      {
+        "name": "list_transactions",
+        "title": "List wallet transactions",
+        "description": "List the signed-in user's wallet transactions (deposits, task payouts, withdrawals).",
+        "annotations": {
+          "readOnlyHint": true,
+          "idempotentHint": true,
+          "openWorldHint": false
+        },
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "limit": {
+              "type": "integer",
+              "description": "Max transactions to return (default 20)."
+            }
+          },
+          "additionalProperties": false,
+          "$schema": "http://json-schema.org/draft-07/schema#"
+        },
+        "outputSchema": null
+      }
+    ]
+  }
+}
