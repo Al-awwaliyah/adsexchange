@@ -13,6 +13,7 @@ import PaymentHistory from "./pages/PaymentHistory";
 import Settings from "./pages/Settings";
 import TaskDetail from "./pages/TaskDetail";
 import ProofDetail from "./pages/ProofDetail";
+import OAuthConsent from "./pages/OAuthConsent";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
