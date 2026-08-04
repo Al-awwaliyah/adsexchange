@@ -33,6 +33,7 @@ const App = () => (
             <Route path="/payment-success" element={<PaymentSuccess />} />
             <Route path="/payment-history" element={<PaymentHistory />} />
             <Route path="/task/:id" element={<TaskDetail />} />
+            <Route path="/proof/:id" element={<ProofDetail />} />
             <Route path="/.lovable/oauth/consent" element={<OAuthConsent />} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
