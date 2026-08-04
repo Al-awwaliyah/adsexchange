@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -14,6 +14,10 @@ import { authSchema } from '@/lib/validation';
 
 const Auth = () => {
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const rawNext = searchParams.get('next');
+  // Only allow same-origin relative paths.
+  const nextPath = rawNext && rawNext.startsWith('/') && !rawNext.startsWith('//') ? rawNext : null;
   const { signUp, signIn, user } = useAuth();
   const [loading, setLoading] = useState(false);
 
@@ -32,7 +36,11 @@ const Auth = () => {
   });
 
   if (user) {
-    navigate('/dashboard');
+    if (nextPath) {
+      window.location.href = nextPath;
+    } else {
+      navigate('/dashboard');
+    }
     return null;
   }
 
@@ -110,6 +118,8 @@ const Auth = () => {
           description: error.message,
           variant: 'destructive'
         });
+      } else if (nextPath) {
+        window.location.href = nextPath;
       } else {
         navigate('/dashboard');
       }
