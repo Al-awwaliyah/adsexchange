@@ -147,6 +147,58 @@
           "$schema": "http://json-schema.org/draft-07/schema#"
         },
         "outputSchema": null
+      },
+      {
+        "name": "request_withdrawal",
+        "title": "Request wallet withdrawal",
+        "description": "Request a withdrawal from the signed-in user's wallet and return the created request with its status. Requires NIN verification, a minimum amount of 100, and sufficient wallet balance. For 'nigerian_bank' provide bank_name, account_number and account_name; for other methods provide account_details.",
+        "annotations": {
+          "readOnlyHint": false,
+          "idempotentHint": false,
+          "openWorldHint": false
+        },
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "amount": {
+              "type": "number",
+              "description": "Amount to withdraw. Minimum 100, cannot exceed the wallet balance."
+            },
+            "payment_method": {
+              "type": "string",
+              "enum": [
+                "nigerian_bank",
+                "bank_transfer",
+                "paypal",
+                "crypto"
+              ],
+              "description": "Payout method."
+            },
+            "bank_name": {
+              "type": "string",
+              "description": "Bank name (required for nigerian_bank)."
+            },
+            "account_number": {
+              "type": "string",
+              "description": "10-digit account number (required for nigerian_bank)."
+            },
+            "account_name": {
+              "type": "string",
+              "description": "Account holder name (required for nigerian_bank)."
+            },
+            "account_details": {
+              "type": "string",
+              "description": "Payout destination for bank_transfer, paypal or crypto."
+            }
+          },
+          "required": [
+            "amount",
+            "payment_method"
+          ],
+          "additionalProperties": false,
+          "$schema": "http://json-schema.org/draft-07/schema#"
+        },
+        "outputSchema": null
       }
     ]
   }

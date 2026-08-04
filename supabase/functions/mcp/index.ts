@@ -229,13 +229,99 @@ var list_transactions_default = defineTool5({
   }
 });
 
+// src/lib/mcp/tools/request-withdrawal.ts
+import { defineTool as defineTool6 } from "npm:@lovable.dev/mcp-js@0.26.1";
+import { z as z5 } from "npm:zod@^3.25.76";
+var request_withdrawal_default = defineTool6({
+  name: "request_withdrawal",
+  title: "Request wallet withdrawal",
+  description: "Request a withdrawal from the signed-in user's wallet and return the created request with its status. Requires NIN verification, a minimum amount of 100, and sufficient wallet balance. For 'nigerian_bank' provide bank_name, account_number and account_name; for other methods provide account_details.",
+  inputSchema: {
+    amount: z5.number().describe("Amount to withdraw. Minimum 100, cannot exceed the wallet balance."),
+    payment_method: z5.enum(["nigerian_bank", "bank_transfer", "paypal", "crypto"]).describe("Payout method."),
+    bank_name: z5.string().optional().describe("Bank name (required for nigerian_bank)."),
+    account_number: z5.string().optional().describe("10-digit account number (required for nigerian_bank)."),
+    account_name: z5.string().optional().describe("Account holder name (required for nigerian_bank)."),
+    account_details: z5.string().optional().describe("Payout destination for bank_transfer, paypal or crypto.")
+  },
+  annotations: { readOnlyHint: false, idempotentHint: false, openWorldHint: false },
+  handler: async (input, ctx) => {
+    if (!ctx.isAuthenticated()) {
+      return { content: [{ type: "text", text: "Not authenticated" }], isError: true };
+    }
+    const userId = ctx.getUserId();
+    if (!userId) {
+      return { content: [{ type: "text", text: "Could not resolve the signed-in user." }], isError: true };
+    }
+    const fail = (text) => ({ content: [{ type: "text", text }], isError: true });
+    const supabase = supabaseForUser(ctx);
+    const amount = Number(input.amount);
+    if (!Number.isFinite(amount) || amount < 100) {
+      return fail("Minimum withdrawal amount is 100.");
+    }
+    if (amount > 1e6) {
+      return fail("Amount cannot exceed 1,000,000.");
+    }
+    const { data: profile, error: profileError } = await supabase.from("profiles").select("nin_verified").eq("id", userId).maybeSingle();
+    if (profileError) return fail(profileError.message);
+    if (!profile?.nin_verified) {
+      return fail("NIN verification is required before requesting a withdrawal. Complete it in Settings \u2192 NIN Verification.");
+    }
+    const { data: wallet, error: walletError } = await supabase.from("wallets").select("balance, currency_type").eq("user_id", userId).maybeSingle();
+    if (walletError) return fail(walletError.message);
+    if (!wallet) return fail("No wallet found for this user.");
+    if (amount > Number(wallet.balance)) {
+      return fail(`Insufficient balance. Available: ${wallet.balance} ${wallet.currency_type}.`);
+    }
+    let paymentDetails;
+    if (input.payment_method === "nigerian_bank") {
+      const bankName = input.bank_name?.trim();
+      const accountNumber = input.account_number?.trim();
+      const accountName = input.account_name?.trim();
+      if (!bankName || !accountNumber || !accountName) {
+        return fail("bank_name, account_number and account_name are required for nigerian_bank withdrawals.");
+      }
+      if (!/^\d{10}$/.test(accountNumber)) {
+        return fail("account_number must be exactly 10 digits.");
+      }
+      paymentDetails = {
+        bank_name: bankName,
+        account_number: accountNumber,
+        account_name: accountName,
+        currency: "NGN"
+      };
+    } else {
+      const account = input.account_details?.trim();
+      if (!account) {
+        return fail(`account_details is required for ${input.payment_method} withdrawals.`);
+      }
+      paymentDetails = { account, currency: String(wallet.currency_type ?? "USD") };
+    }
+    const { data, error } = await supabase.from("withdrawals").insert({
+      user_id: userId,
+      amount,
+      payment_method: input.payment_method,
+      payment_details: paymentDetails,
+      status: "pending"
+    }).select("id, amount, payment_method, status, created_at, processed_at").single();
+    if (error) return fail(error.message);
+    const summary = `Withdrawal request created. Status: ${data.status}. Amount: ${data.amount}. It will be reviewed by an admin before payout.`;
+    return {
+      content: [{ type: "text", text: `${summary}
+
+${JSON.stringify(data, null, 2)}` }],
+      structuredContent: { withdrawal: data, status: data.status }
+    };
+  }
+});
+
 // src/lib/mcp/index.ts
 var projectRef = "ywrgibkaacpqdhimswul";
 var mcp_default = defineMcp({
   name: "adexchange",
   title: "AdExchange",
   version: "0.1.0",
-  instructions: "Tools for AdExchange, a marketplace connecting advertisers with promoters. Use `get_my_account` for the signed-in user's profile, roles and wallet, `list_campaigns` and `create_campaign` for advertiser campaigns, `list_my_tasks` for promoter tasks, and `list_transactions` for wallet activity. All tools act as the signed-in user.",
+  instructions: "Tools for AdExchange, a marketplace connecting advertisers with promoters. Use `get_my_account` for the signed-in user's profile, roles and wallet, `list_campaigns` and `create_campaign` for advertiser campaigns, `list_my_tasks` for promoter tasks, `list_transactions` for wallet activity, and `request_withdrawal` to request a wallet payout and get its status. All tools act as the signed-in user.",
   auth: auth.oauth.issuer({
     issuer: `https://${projectRef}.supabase.co/auth/v1`,
     acceptedAudiences: "authenticated"
@@ -245,7 +331,8 @@ var mcp_default = defineMcp({
     list_campaigns_default,
     create_campaign_default,
     list_my_tasks_default,
-    list_transactions_default
+    list_transactions_default,
+    request_withdrawal_default
   ]
 });
 
