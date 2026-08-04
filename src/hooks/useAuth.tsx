@@ -65,7 +65,10 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   }, []);
 
   const signUp = async (email: string, password: string, fullName: string, role: AppRole, currency: 'USD' | 'NGN' = 'USD', referralCode?: string) => {
-    const redirectUrl = `${window.location.origin}/dashboard`;
+    // Preserve an OAuth consent (or other) return path across email confirmation.
+    const rawNext = new URLSearchParams(window.location.search).get('next');
+    const nextPath = rawNext && rawNext.startsWith('/') && !rawNext.startsWith('//') ? rawNext : null;
+    const redirectUrl = `${window.location.origin}${nextPath ?? '/dashboard'}`;
     
     // Clean and validate referral code if provided
     const cleanReferralCode = referralCode?.trim().toUpperCase();
