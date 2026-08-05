@@ -33,9 +33,9 @@ export const useCurrency = () => {
 
     fetchCurrency();
 
-    // Subscribe to wallet changes
+    // Subscribe to wallet changes (unique channel name per hook instance)
     const channel = supabase
-      .channel('wallet-changes')
+      .channel(`wallet-changes-${user.id}-${Math.random().toString(36).slice(2)}`)
       .on(
         'postgres_changes',
         {
