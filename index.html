@@ -2,37 +2,168 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>AdsExchange</title>
-    <meta name="description" content="Connect advertisers with promoters for effective social media marketing campaigns">
+
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0"
+    />
+
+    <title>AdsExchange — Social Media Advertising & Promotion Platform</title>
+
+    <meta
+      name="description"
+      content="AdsExchange connects advertisers with promoters for social media advertising campaigns, helping businesses reach audiences through task-based promotion."
+    />
+
     <meta name="author" content="AdsExchange" />
 
-    <!-- PWA Meta Tags -->
-    <meta name="theme-color" content="#5B9FED">
-    <meta name="mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-status-bar-style" content="default">
-    <meta name="apple-mobile-web-app-title" content="AdsExchange">
-    <link rel="manifest" href="/manifest.json">
-    <link rel="apple-touch-icon" href="/apple-touch-icon.png">
-    
-    <!-- Social Meta Tags -->
-    <meta property="og:type" content="website" />
-    <meta property="og:image" content="/icon-512.png">
-    <meta property="og:title" content="AdsExchange">
-    <meta property="og:description" content="Connect advertisers with promoters for effective social media marketing campaigns">
+    <meta
+      name="robots"
+      content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1"
+    />
 
-    <meta name="twitter:card" content="summary_large_image" />
-    <meta name="twitter:site" content="@adsexchange" />
-    <meta name="twitter:image" content="/icon-512.png">
-    <meta name="twitter:title" content="AdsExchange">
-    <meta name="twitter:description" content="Connect advertisers with promoters for effective social media marketing campaigns">
-    
-    <link rel="icon" type="image/png" href="/icon-192.png">
-</head>
+    <meta
+      name="googlebot"
+      content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1"
+    />
+
+    <link
+      rel="canonical"
+      href="https://adsexchange.vercel.app/"
+    />
+
+    <!-- Google Search Console verification -->
+    <meta
+      name="google-site-verification"
+      content="googlea4e1908b3d446103"
+    />
+
+    <!-- PWA -->
+    <meta name="theme-color" content="#5B9FED" />
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta
+      name="apple-mobile-web-app-status-bar-style"
+      content="default"
+    />
+    <meta
+      name="apple-mobile-web-app-title"
+      content="AdsExchange"
+    />
+
+    <link
+      rel="manifest"
+      href="/manifest.webmanifest"
+    />
+
+    <link
+      rel="apple-touch-icon"
+      href="/apple-touch-icon.png"
+    />
+
+    <link
+      rel="icon"
+      type="image/png"
+      href="/icon-192.png"
+    />
+
+    <!-- Open Graph -->
+    <meta property="og:type" content="website" />
+
+    <meta
+      property="og:site_name"
+      content="AdsExchange"
+    />
+
+    <meta
+      property="og:url"
+      content="https://adsexchange.vercel.app/"
+    />
+
+    <meta
+      property="og:title"
+      content="AdsExchange — Social Media Advertising & Promotion Platform"
+    />
+
+    <meta
+      property="og:description"
+      content="Connect advertisers with promoters for effective social media advertising campaigns."
+    />
+
+    <meta
+      property="og:image"
+      content="https://adsexchange.vercel.app/icon-512.png"
+    />
+
+    <!-- Twitter -->
+    <meta
+      name="twitter:card"
+      content="summary_large_image"
+    />
+
+    <meta
+      name="twitter:site"
+      content="@adsexchange"
+    />
+
+    <meta
+      name="twitter:title"
+      content="AdsExchange — Social Media Advertising & Promotion Platform"
+    />
+
+    <meta
+      name="twitter:description"
+      content="Connect advertisers with promoters for effective social media advertising campaigns."
+    />
+
+    <meta
+      name="twitter:image"
+      content="https://adsexchange.vercel.app/icon-512.png"
+    />
+
+    <!-- Structured Data -->
+    <script type="application/ld+json">
+      {
+        "@context": "https://schema.org",
+        "@graph": [
+          {
+            "@type": "WebSite",
+            "@id": "https://adsexchange.vercel.app/#website",
+            "url": "https://adsexchange.vercel.app/",
+            "name": "AdsExchange",
+            "description": "A social media advertising and promotion platform connecting advertisers with promoters.",
+            "inLanguage": "en"
+          },
+          {
+            "@type": "Organization",
+            "@id": "https://adsexchange.vercel.app/#organization",
+            "name": "AdsExchange",
+            "url": "https://adsexchange.vercel.app/",
+            "logo": {
+              "@type": "ImageObject",
+              "url": "https://adsexchange.vercel.app/icon-512.png"
+            }
+          },
+          {
+            "@type": "WebApplication",
+            "@id": "https://adsexchange.vercel.app/#application",
+            "name": "AdsExchange",
+            "url": "https://adsexchange.vercel.app/",
+            "description": "AdsExchange connects advertisers with promoters for social media advertising campaigns.",
+            "applicationCategory": "BusinessApplication",
+            "operatingSystem": "Web"
+          }
+        ]
+      }
+    </script>
+  </head>
 
   <body>
     <div id="root"></div>
-    <script type="module" src="/src/main.tsx"></script>
+
+    <script
+      type="module"
+      src="/src/main.tsx"
+    ></script>
   </body>
 </html>
